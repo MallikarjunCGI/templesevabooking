@@ -18,8 +18,13 @@ connectDB();
 const app = express();
 
 // Middleware
+// app.use(cors({
+//     origin: ['http://localhost:5173', 'http://localhost:5174'],
+//     credentials: true
+// }));
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: true, // This reflects the request origin, allowing any URL
     credentials: true
 }));
 app.use(express.json());
