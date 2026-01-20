@@ -11,7 +11,7 @@ const getSettings = asyncHandler(async (req, res) => {
     } else {
         // Return defaults if not found
         res.json({
-            templeName: 'Shree Kshetra Ramtirtha',
+            templeName: 'Shree Kshetra Ramatheertha',
             contactEmail: 'contact@temple.com',
             contactPhone: '+91 99999 99999',
             address: 'Temple Address',

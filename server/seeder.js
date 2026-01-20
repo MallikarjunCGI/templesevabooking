@@ -15,7 +15,7 @@ const sevasData = [
     {
         titleEn: 'Rudra Abhisheka',
         titleKn: 'ರುದ್ರ ಅಭಿಷೇಕ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -28,7 +28,7 @@ const sevasData = [
     {
         titleEn: 'Mahalakshmi Alankara',
         titleKn: 'ಮಹಾಲಕ್ಷ್ಮಿ ಅಲಂಕಾರ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -41,7 +41,7 @@ const sevasData = [
     {
         titleEn: 'Sarva Seva',
         titleKn: 'ಸರ್ವ ಸೇವೆ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -54,7 +54,7 @@ const sevasData = [
     {
         titleEn: 'Kalyanotsavam',
         titleKn: 'ಕಲ್ಯಾಣೋತ್ಸವ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -67,7 +67,7 @@ const sevasData = [
     {
         titleEn: 'Maha Rudrabhishekam',
         titleKn: 'ಮಹಾ ರುದ್ರಾಭಿಷೇಕ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -80,7 +80,7 @@ const sevasData = [
     {
         titleEn: 'Kumkumarchana',
         titleKn: 'ಕುಂಕುಮಾರ್ಚನೆ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -93,7 +93,7 @@ const sevasData = [
     {
         titleEn: 'Deeparadhana',
         titleKn: 'ದೀಪಾರಾಧನೆ',
-        templeNameEn: 'Shree Kshetra Ramtirtha',
+        templeNameEn: 'Shree Kshetra Ramatheertha',
         templeNameKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
         locationEn: 'Karnataka',
         locationKn: 'ಕರ್ನಾಟಕ',
@@ -200,7 +200,7 @@ const importData = async () => {
 
         // 4. Settings
         await Settings.create({
-            templeName: 'Shree Kshetra Ramtirtha',
+            templeName: 'Shree Kshetra Ramatheertha',
             contactEmail: 'contact@temple.com',
             contactPhone: '+91 80 1234 5678',
             address: 'Karnataka, India'
@@ -211,11 +211,11 @@ const importData = async () => {
         await HeroSlide.insertMany([
             {
                 image: '/images/hero-hampi.jpg',
-                titleEn: 'Divine Shree Kshetra Ramtirtha',
+                titleEn: 'Divine Shree Kshetra Ramatheertha',
                 titleKn: 'ದಿವ್ಯ ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
                 subtitleEn: 'Experience eternal peace and prosperity at our sacred sanctum.',
                 subtitleKn: 'ನಮ್ಮ ಪವಿತ್ರ ಸನ್ನಿಧಿಯಲ್ಲಿ ಶಾಶ್ವತ ಶಾಂತಿ ಮತ್ತು ಸಮೃದ್ಧಿಯನ್ನು ಅನುಭವಿಸಿ.',
-                locationEn: 'Shree Kshetra Ramtirtha',
+                locationEn: 'Shree Kshetra Ramatheertha',
                 locationKn: 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
                 order: 1
             },

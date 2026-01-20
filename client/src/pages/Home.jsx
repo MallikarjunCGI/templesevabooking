@@ -59,14 +59,14 @@ const Home = () => {
             {/* Hero Section */}
             <section className="px-4 mb-8 pt-6">
                 <HeroCarousel />
-                <div className="-mt-8 relative z-10 space-y-4">
+                {/* <div className="-mt-8 relative z-10 space-y-4">
                     <SearchBar
                         value={trackPhone}
                         onChange={setTrackPhone}
                         onSearch={(val) => navigate('/sevas', { state: { search: val } })}
                         isTracking={isTracking}
                     />
-                </div>
+                </div> */}
             </section>
 
             {/* Featured Section */}
