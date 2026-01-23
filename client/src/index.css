@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html,
+body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.hide-navbar nav {
+    display: none !important;
+}

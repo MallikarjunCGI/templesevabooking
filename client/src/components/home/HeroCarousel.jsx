@@ -54,7 +54,7 @@ const HeroCarousel = () => {
         fetchHeroSlides();
     }, []);
     return (
-        <div className="relative h-[500px] w-full mt-4 rounded-2xl overflow-hidden shadow-2xl mx-auto max-w-7xl group z-0">
+        <div className="relative h-[350px] sm:h-[400px] md:h-[500px] w-full mt-4 rounded-2xl overflow-hidden shadow-2xl mx-auto max-w-7xl group z-0">
             <style>
                 {`
                     .swiper-button-next, .swiper-button-prev {
@@ -65,6 +65,12 @@ const HeroCarousel = () => {
                         height: 44px;
                         border-radius: 50%;
                         transition: all 0.3s ease;
+                        display: none !important; /* Hide by default on mobile */
+                    }
+                    @media (min-width: 768px) {
+                        .swiper-button-next, .swiper-button-prev {
+                            display: flex !important;
+                        }
                     }
                     .swiper-button-next:hover, .swiper-button-prev:hover {
                         background: rgba(234, 88, 12, 0.8); /* Orange-600 */
@@ -122,15 +128,15 @@ const HeroCarousel = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                             {/* Text Content */}
-                            <div className="absolute bottom-20 left-8 md:left-16 text-white max-w-3xl z-10 animate-fade-in-up">
-                                <span className="inline-flex items-center px-3 py-1 bg-orange-600 text-xs font-bold tracking-wider uppercase rounded-full mb-6">
-                                    <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
+                            <div className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-6 sm:left-8 md:left-16 text-white max-w-3xl z-10 animate-fade-in-up">
+                                <span className="inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 bg-orange-600 text-[10px] sm:text-xs font-bold tracking-wider uppercase rounded-full mb-3 sm:mb-6">
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full mr-2 animate-pulse"></span>
                                     {currentLang === 'kn' ? (slide.locationKn || slide.locationEn || slide.location) : (slide.locationEn || slide.locationKn || slide.location)}
                                 </span>
-                                <h2 className="text-4xl md:text-6xl font-bold mb-4 font-serif leading-tight drop-shadow-lg group-hover/slide:text-orange-200 transition-colors">
+                                <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 sm:mb-4 font-serif leading-tight drop-shadow-lg group-hover/slide:text-orange-200 transition-colors">
                                     {currentLang === 'kn' ? (slide.titleKn || slide.titleEn || slide.title) : (slide.titleEn || slide.titleKn || slide.title)}
-                                </h2>
-                                <p className="text-lg md:text-xl text-gray-100 font-light tracking-wide drop-shadow-md">
+                                </h1>
+                                <p className="text-sm sm:text-lg md:text-xl text-gray-100 font-light tracking-wide drop-shadow-md line-clamp-2 sm:line-clamp-none">
                                     {currentLang === 'kn' ? (slide.subtitleKn || slide.subtitleEn || slide.subtitle) : (slide.subtitleEn || slide.subtitleKn || slide.subtitle)}
                                 </p>
                             </div>

@@ -98,49 +98,48 @@ const BookingSuccess = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
-            <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl max-w-2xl w-full text-center border border-gray-100">
-                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short">
-                    <CheckCircle className="w-10 h-10" />
+            <div className="bg-white p-6 sm:p-10 md:p-12 rounded-[2.5rem] shadow-xl max-w-2xl w-full text-center border border-orange-50">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short shadow-inner">
+                    <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10" />
                 </div>
 
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Successful!</h1>
-                <p className="text-gray-500 mb-8">
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2 font-serif">Booking Successful!</h1>
+                <p className="text-gray-500 mb-8 text-sm sm:text-base font-medium opacity-80">
                     Your seva has been successfully booked. May the blessings be with you.
                 </p>
 
-                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left border border-gray-100">
+                <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 mb-8 text-left border border-gray-100">
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                        <span className="text-gray-500 font-medium">Booking ID</span>
-                        <span className="font-mono font-bold text-gray-900">#{booking._id.slice(-6).toUpperCase()}</span>
+                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">Booking ID</span>
+                        <span className="font-mono font-bold text-gray-900 text-sm sm:text-base">#{booking._id.slice(-6).toUpperCase()}</span>
                     </div>
-                    <div className="flex justify-between items-start mb-2">
-                        <span className="text-gray-500 font-medium">Seva</span>
-                        <span className="font-bold text-gray-900 text-right">
+                    <div className="flex justify-between items-start mb-3">
+                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest mt-1">Seva Offering</span>
+                        <span className="font-bold text-gray-900 text-right text-sm sm:text-base max-w-[180px] sm:max-w-none">
                             {i18n.language === 'kn' ? (booking.seva?.titleKn || booking.seva?.titleEn || booking.seva?.title) : (booking.seva?.titleEn || booking.seva?.titleKn || booking.seva?.title)}
                         </span>
                     </div>
                     <div className="flex justify-between items-center">
-                        <span className="text-gray-500 font-medium">Amount</span>
-                        <span className="font-bold text-orange-600">₹{booking.totalAmount}</span>
+                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">Amount Paid</span>
+                        <span className="font-black text-orange-600 text-xl sm:text-2xl">₹{booking.totalAmount}</span>
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
                         to="/"
-                        className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+                        className="inline-flex items-center justify-center px-6 py-4 bg-white text-gray-700 font-black rounded-xl border border-gray-200 hover:bg-gray-50 transition-all text-sm sm:text-base active:scale-95"
                     >
                         <Home className="w-4 h-4 mr-2" />
                         Back to Home
                     </Link>
                     <button
                         onClick={generatePDF}
-                        className="inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+                        className="inline-flex items-center justify-center px-6 py-4 bg-gray-900 text-white font-black rounded-xl hover:bg-orange-600 transition-all shadow-lg shadow-gray-200 text-sm sm:text-base active:scale-95"
                     >
                         <Download className="w-4 h-4 mr-2" />
                         Download Receipt
                     </button>
-                    {/* Optional: Add "View My Bookings" if authenticated, but keeping it simple for now */}
                 </div>
             </div>
         </div>

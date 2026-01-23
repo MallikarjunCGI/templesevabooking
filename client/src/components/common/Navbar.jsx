@@ -38,7 +38,7 @@ const Navbar = () => {
                             <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-200 group-hover:rotate-12 transition-transform duration-300">
                                 <span className="text-white font-black text-xl">ॐ</span>
                             </div>
-                            <span className="ml-3 text-2xl font-black text-gray-900 tracking-tighter font-serif">
+                            <span className="ml-2 sm:ml-3 text-sm min-[380px]:text-base sm:text-lg md:text-2xl font-black text-gray-900 tracking-tighter font-serif whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] min-[380px]:max-w-[200px] sm:max-w-none">
                                 {t('nav.temple_name_prefix')} <span className="text-orange-600">{t('nav.temple_name_suffix')}</span>
                             </span>
                         </Link>

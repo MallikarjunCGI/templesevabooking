@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import SankalpaForm from '../components/booking/SankalpaForm';
 import PricingWidget from '../components/booking/PricingWidget';
 import api from '../utils/api';
+import UPILayer from '../components/booking/UPILayer';
 
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +16,10 @@ const SevaDetails = () => {
     const { isAuthenticated } = useSelector((state) => state.auth);
 
     const [seva, setSeva] = useState(null);
+    const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showUPI, setShowUPI] = useState(false);
+    const [isBooking, setIsBooking] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -63,6 +67,15 @@ const SevaDetails = () => {
             }
         };
 
+        const fetchSettings = async () => {
+            try {
+                const { data } = await api.get('/settings');
+                setSettings(data);
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        };
+
         // Check for pre-filled data from lookup
         const savedData = sessionStorage.getItem('prefill_booking');
         if (savedData) {
@@ -78,6 +91,7 @@ const SevaDetails = () => {
 
         if (id) {
             fetchSeva();
+            fetchSettings();
         } else {
             console.error('No ID provided in URL');
             navigate('/sevas');
@@ -124,6 +138,11 @@ const SevaDetails = () => {
             return;
         }
 
+        setShowUPI(true);
+    };
+
+    const confirmBooking = async () => {
+        setIsBooking(true);
         try {
             const bookingData = {
                 sevaId: id,
@@ -141,7 +160,7 @@ const SevaDetails = () => {
             };
 
             const { data: responseData } = await api.post('/bookings', bookingData);
-            toast.success('Booking Successful!');
+            toast.success('Payment Confirmed!');
 
             // Navigate to success page with booking data for receipt
             navigate('/booking-success', {
@@ -157,6 +176,9 @@ const SevaDetails = () => {
         } catch (error) {
             console.error(error);
             toast.error('Booking failed. Please try again.');
+        } finally {
+            setIsBooking(false);
+            setShowUPI(false);
         }
     };
 
@@ -176,28 +198,28 @@ const SevaDetails = () => {
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
             {/* Hero Section */}
-            <div className="relative h-64 md:h-80 w-full bg-gray-900">
+            <div className="relative h-56 sm:h-64 md:h-80 w-full bg-gray-900">
                 <img
                     src={seva.image}
                     alt={currentLang === 'kn' ? seva.titleKn : seva.titleEn}
                     className="w-full h-full object-cover opacity-60"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 max-w-7xl mx-auto">
+                <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8 md:p-12 max-w-7xl mx-auto">
                     <button
                         onClick={() => navigate(-1)}
-                        className="absolute top-6 left-6 text-white hover:text-orange-200 flex items-center transition-colors font-bold group"
+                        className="absolute top-4 sm:top-6 left-4 sm:left-6 text-white hover:text-orange-200 flex items-center transition-colors font-bold group"
                     >
                         <ArrowLeft className="w-5 h-5 mr-1 transform group-hover:-translate-x-1 transition-transform" />
                         {t('common.back')}
                     </button>
-                    <span className="text-orange-300 font-bold tracking-wider uppercase text-sm mb-2">
+                    <span className="text-orange-300 font-bold tracking-wider uppercase text-[10px] sm:text-xs mb-1 sm:mb-2">
                         {currentLang === 'kn' ? (seva.templeNameKn || seva.templeNameEn || seva.templeName || seva.temple) : (seva.templeNameEn || seva.templeNameKn || seva.templeName || seva.temple)}
                     </span>
-                    <h1 className="text-3xl md:text-5xl font-black text-white leading-tight font-serif">
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-tight font-serif drop-shadow-lg">
                         {currentLang === 'kn' ? (seva.titleKn || seva.titleEn || seva.title) : (seva.titleEn || seva.titleKn || seva.title)}
                     </h1>
-                    <p className="text-gray-200 flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" /> {currentLang === 'kn' ? (seva.locationKn || seva.locationEn || seva.location || seva.place) : (seva.locationEn || seva.locationKn || seva.location || seva.place)}
+                    <p className="text-gray-200 flex items-center text-xs sm:text-sm mt-1">
+                        <MapPin className="w-3.5 h-3.5 mr-1.5" /> {currentLang === 'kn' ? (seva.locationKn || seva.locationEn || seva.location || seva.place) : (seva.locationEn || seva.locationKn || seva.location || seva.place)}
                     </p>
                 </div>
             </div>
@@ -266,6 +288,27 @@ const SevaDetails = () => {
 
                 </div>
             </div>
+
+            {/* UPI Payment Layer */}
+            <UPILayer
+                isOpen={showUPI}
+                onClose={() => setShowUPI(false)}
+                onConfirm={confirmBooking}
+                amount={total}
+                upiId={settings?.upiId || 'payment@upi'}
+                templeName={currentLang === 'kn' ? (seva.templeNameKn || settings?.templeName) : (seva.templeNameEn || settings?.templeName)}
+                sevaName={currentLang === 'kn' ? seva.titleKn : seva.titleEn}
+            />
+
+            {/* Loading Overlay when booking */}
+            {isBooking && (
+                <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center">
+                        <Loader2 className="w-12 h-12 text-orange-600 animate-spin mb-4" />
+                        <p className="font-bold text-gray-800">Processing Your Booking...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -19,23 +19,26 @@ const SearchBar = ({
 
     return (
         <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSubmit} className="bg-white p-2 md:p-4 rounded-3xl shadow-2xl border border-orange-100 flex flex-col md:flex-row items-center gap-4">
-                <div className="flex-1 flex items-center px-4 w-full">
-                    <Search className="text-orange-600 w-6 h-6 mr-3" />
+            <form onSubmit={handleSubmit} className="bg-white p-1.5 sm:p-3 rounded-[1.25rem] sm:rounded-3xl shadow-2xl shadow-orange-100/50 border border-orange-100 flex items-center gap-2 sm:gap-4 overflow-hidden">
+                <div className="flex-1 flex items-center px-3 sm:px-4">
+                    {/* <Search className="text-orange-600 w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 shrink-0" /> */}
                     <input
                         type="text"
                         placeholder={t('home.search_placeholder') || "Search for Seva or Mobile Number"}
-                        className="w-full py-3 outline-none text-gray-700 font-medium placeholder:text-gray-400"
+                        className="w-full py-2.5 sm:py-3 outline-none text-gray-700 text-sm sm:text-base font-bold placeholder:text-gray-400 bg-transparent"
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                     />
-                    {isTracking && <Loader2 className="w-5 h-5 animate-spin text-orange-600 ml-2" />}
+                    {isTracking && <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-orange-600 ml-2" />}
                 </div>
                 <button
                     type="submit"
-                    className="w-full md:w-auto px-10 py-4 bg-orange-600 text-white font-black rounded-2xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 active:scale-95"
+                    className="flex items-center justify-center bg-orange-600 text-white font-black rounded-xl sm:rounded-2xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 active:scale-95 shrink-0 h-11 w-11 sm:h-auto sm:w-auto sm:px-10 sm:py-4"
                 >
-                    {t('home.find_btn')}
+                    <Search className="w-5 h-5 sm:hidden" />
+                    <span className="hidden sm:block">
+                        {t('home.find_btn')}
+                    </span>
                 </button>
             </form>
 

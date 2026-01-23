@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import Navbar from './components/common/Navbar'
 import Footer from './components/common/Footer'
 import BackgroundWrapper from './components/common/BackgroundWrapper'
+import ScrollToTop from './components/common/ScrollToTop'
 
 // Pages
 import { Suspense, lazy } from 'react'
@@ -37,6 +38,7 @@ function App() {
         <>
             <Toaster position="top-center" />
             <Suspense fallback={<PageLoader />}>
+                <ScrollToTop />
                 <Routes>
                     {/* User Routes */}
                     <Route element={<BackgroundWrapper><Navbar /><div className="pt-4 min-h-[70vh]"><Outlet /></div><Footer /></BackgroundWrapper>}>

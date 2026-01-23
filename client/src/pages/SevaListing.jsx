@@ -58,15 +58,15 @@ const SevaListing = () => {
     return (
         <div className="bg-gray-50 min-h-screen pb-20">
             {/* Header Section */}
-            <div className="bg-white border-b border-orange-100 pt-10 pb-16 px-4">
+            <div className="bg-white border-b border-orange-100 pt-6 md:pt-10 pb-12 md:pb-16 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <Link to="/" className="inline-flex items-center text-orange-600 font-bold mb-8 hover:translate-x-1 transition-transform">
+                    <Link to="/" className="inline-flex items-center text-orange-600 font-bold mb-6 md:mb-8 hover:translate-x-1 transition-transform text-sm sm:text-base">
                         <ArrowLeft className="w-4 h-4 mr-2" /> {t('common.back_home')}
                     </Link>
-                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight drop-shadow-sm">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-3 md:mb-4 tracking-tight drop-shadow-sm">
                         {t('listing.title')}
                     </h1>
-                    <p className="text-gray-500 text-lg max-w-2xl font-medium opacity-80">
+                    <p className="text-gray-500 text-base sm:text-lg max-w-2xl font-medium opacity-80 leading-relaxed">
                         {t('listing.subtitle')}
                     </p>
                 </div>

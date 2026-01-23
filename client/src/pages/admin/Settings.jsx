@@ -21,6 +21,7 @@ const Settings = () => {
         ritualHours: '06:00 AM - 08:00 PM',
         allowSameDayBooking: true,
         notifyDevotee: true,
+        upiId: '',
     });
 
     useEffect(() => {
@@ -40,6 +41,7 @@ const Settings = () => {
                     ritualHours: data.ritualHours,
                     allowSameDayBooking: data.allowSameDayBooking,
                     notifyDevotee: data.notifyDevotee,
+                    upiId: data.upiId || '',
                 });
             } catch (error) {
                 console.error('Failed to fetch settings', error);
@@ -58,9 +60,11 @@ const Settings = () => {
                 address: templeInfo.address,
                 website: templeInfo.website,
                 currency: systemSettings.currency,
+                timezone: systemSettings.timezone,
                 ritualHours: systemSettings.ritualHours,
                 allowSameDayBooking: systemSettings.allowSameDayBooking,
-                notifyDevotee: systemSettings.notifyDevotee
+                notifyDevotee: systemSettings.notifyDevotee,
+                upiId: systemSettings.upiId
             };
             await api.put('/settings', payload);
             toast.success(`${section} ${t('admin.settings.save_success', 'updated successfully!')}`);
@@ -167,6 +171,19 @@ const Settings = () => {
                                 <span className="text-gray-600 font-medium">{systemSettings.ritualHours}</span>
                             </div>
                         </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">UPI ID (VPA)</label>
+                            <div className="flex items-center px-4 py-3 rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                                <CreditCard className="w-4 h-4 text-gray-400 mr-2" />
+                                <input
+                                    type="text"
+                                    className="w-full outline-none bg-transparent"
+                                    placeholder="e.g. temple@upi"
+                                    value={systemSettings.upiId}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, upiId: e.target.value })}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-gray-50">
@@ -206,8 +223,6 @@ const Settings = () => {
                     </div>
                 </div>
             </section>
-
-
 
             {/* Security */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

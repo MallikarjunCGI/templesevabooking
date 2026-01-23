@@ -10,20 +10,20 @@ const PricingWidget = ({ basePrice, count, setCount, total, setTotal }) => {
     }, [basePrice, count, setTotal]);
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">{t('pricing.title')}</h3>
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-orange-100">
+            <h3 className="text-lg font-black text-gray-900 mb-5">{t('pricing.title')}</h3>
 
             {/* Individual Selection (Now the only option) */}
             <div className="flex flex-col space-y-3 mb-6">
-                <div className="relative p-4 rounded-xl border-2 border-orange-500 bg-orange-50 text-left transition-all">
+                <div className="relative p-4 rounded-2xl border-2 border-orange-600 bg-orange-50/50 text-left transition-all">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                            <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
+                            <div className="p-2 sm:p-2.5 rounded-xl bg-orange-600 text-white shadow-md shadow-orange-100">
                                 <User className="w-5 h-5" />
                             </div>
-                            <div className="ml-3">
-                                <p className="font-bold text-gray-900">{t('pricing.individual')}</p>
-                                <p className="text-xs text-gray-500">For single devotee</p>
+                            <div className="ml-3 sm:ml-4">
+                                <p className="font-black text-gray-900 leading-none mb-1">{t('pricing.individual')}</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">For single devotee</p>
                             </div>
                         </div>
                         <Check className="w-5 h-5 text-orange-600" />
@@ -34,33 +34,33 @@ const PricingWidget = ({ basePrice, count, setCount, total, setTotal }) => {
             {/* Dynamic Content (Count Selection) */}
             <div className="mb-6">
                 <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center border border-gray-100">
-                    <span className="text-gray-700 font-medium text-sm">{t('pricing.count')}</span>
-                    <div className="flex items-center space-x-3">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('pricing.count')}</span>
+                    <div className="flex items-center space-x-4">
                         <button
                             onClick={() => setCount(Math.max(1, count - 1))}
-                            className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-sm active:scale-90"
                         >
-                            -
+                            <span className="text-xl font-bold">-</span>
                         </button>
-                        <span className="text-lg font-bold w-6 text-center">{count}</span>
+                        <span className="text-xl font-black w-6 text-center text-gray-900">{count}</span>
                         <button
                             onClick={() => setCount(Math.min(10, count + 1))}
-                            className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                            className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all shadow-sm active:scale-90"
                         >
-                            +
+                            <span className="text-xl font-bold">+</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Total Display */}
-            <div className="border-t border-dashed border-gray-200 pt-4 flex justify-between items-end">
+            <div className="border-t border-dashed border-gray-200 pt-5 flex justify-between items-end">
                 <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">{t('seva_details.total_amount')}</p>
-                    <p className="text-3xl font-bold text-gray-900">₹{total}</p>
+                    <p className="text-[10px] text-orange-600 font-black uppercase tracking-[0.2em] mb-1.5">{t('seva_details.total_amount')}</p>
+                    <p className="text-4xl font-black text-gray-900">₹{total}</p>
                 </div>
                 <div className="text-right">
-                    <p className="text-xs text-gray-500">₹{basePrice} x {count}</p>
+                    <p className="text-xs font-black text-gray-400">₹{basePrice} × {count}</p>
                 </div>
             </div>
         </div>
