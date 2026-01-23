@@ -17,6 +17,7 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
     // UPI Deep Link Format: upi://pay?pa=VPA&pn=NAME&am=AMOUNT&tn=NOTE&cu=CURRENCY
     const encodedTempleName = encodeURIComponent(templeName || 'Temple');
     const encodedSevaName = encodeURIComponent(sevaName || 'Seva Booking');
+    const upiId='7829892976@ybl'
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
 
     return (
