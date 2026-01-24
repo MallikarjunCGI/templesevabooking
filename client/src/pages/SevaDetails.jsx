@@ -156,7 +156,7 @@ const options = {
     card: false,
     netbanking: false,
     wallet: false,
-    paylater: false,
+    paylater: true,
   },
 
   // 📱 UPI specific config
