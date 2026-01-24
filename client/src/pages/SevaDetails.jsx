@@ -161,7 +161,7 @@ const options = {
 
   // 📱 UPI specific config
   upi: {
-    flow: "collect", // shows QR + UPI apps
+    flow: "intent", // shows QR + UPI apps
   },
 
   handler: function (response) {
