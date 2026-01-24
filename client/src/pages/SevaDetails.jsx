@@ -109,37 +109,79 @@ const SevaDetails = () => {
     };
 
 
-    const handlePayment = async () => {
-        // if (!isAuthenticated) {
-        //     toast.error('Please login to book a seva');
-        //     navigate('/login');
-        //     return;
-        // }
-
-        const newErrors = {
+const handlePayment = async () => {
+    // 1. Basic Validation (Name and Phone are required)
+    if (!formData.name || (!isAuthenticated && !formData.guestPhone)) {
+        setErrors({
             name: !formData.name,
             guestPhone: !isAuthenticated && !formData.guestPhone
+        });
+        toast.error('Please fill mandatory fields');
+        return;
+    }
+
+    setIsBooking(true);
+
+    try {
+        const bookingData = {
+            sevaId: id,
+            devoteeName: formData.name,
+            gothram: formData.gothram,
+            rashi: formData.rashi,
+            nakshatra: formData.nakshatra,
+            bookingType: count > 1 ? 'family' : 'individual',
+            count,
+            totalAmount: total,
+            guestName: formData.guestName || formData.name,
+            guestEmail: formData.guestEmail,
+            guestPhone: formData.guestPhone,
+            bookingDate: selectedDate
         };
 
-        setErrors(newErrors);
+        // 2. Call your backend to create a "Pending" booking and Razorpay Order
+        const { data } = await api.post('/bookings', bookingData);
 
-        if (newErrors.name || newErrors.guestPhone) {
-            toast.error('Please fill all mandatory fields');
-
-            // Focus the first error field
-            const firstError = newErrors.name ? 'name' : 'guestPhone';
-            setTimeout(() => {
-                const element = document.getElementsByName(firstError)[0];
-                if (element) {
-                    element.focus();
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 3. Configure Razorpay Options
+        const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Ensure this is in your .env
+            amount: data.razorpayOrder.amount,
+            currency: data.razorpayOrder.currency,
+            name: "Shree Kshetra Ramtirtha",
+            description: `Seva: ${currentLang === 'kn' ? seva.titleKn : seva.titleEn}`,
+            order_id: data.razorpayOrder.id,
+            handler: function (response) {
+                // This function runs on payment success
+                toast.success('Payment Successful!');
+                navigate('/booking-success', { 
+                    state: { booking: data.booking } 
+                });
+            },
+            prefill: {
+                name: formData.name,
+                contact: formData.guestPhone,
+                email: formData.guestEmail
+            },
+            theme: {
+                color: "#ea580c", // Matches your orange theme
+            },
+            modal: {
+                ondismiss: function() {
+                    setIsBooking(false);
                 }
-            }, 100);
-            return;
-        }
+            }
+        };
+        
 
-        setShowUPI(true);
-    };
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+    } catch (error) {
+        console.error('Payment Error:', error);
+        toast.error(error.response?.data?.message || 'Payment failed to initiate');
+    } finally {
+        setIsBooking(false);
+    }
+};
 
     const confirmBooking = async () => {
         setIsBooking(true);

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -11,6 +12,9 @@ const heroRoutes = require('./routes/heroRoutes');
 
 // Load env vars
 dotenv.config();
+
+// Print all environment variables
+console.log(process.env);
 
 // Connect to database
 connectDB();

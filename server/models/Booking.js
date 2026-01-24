@@ -27,6 +27,16 @@ const bookingSchema = mongoose.Schema(
             required: true,
             default: 0.0,
         },
+        // --- NEW FIELDS FOR RAZORPAY ---
+        razorpayOrderId: {
+            type: String,
+            required: false, // Set to true if you want every booking to have an order
+        },
+        razorpayPaymentId: {
+            type: String, // Useful for storing the actual transaction ID after success
+            required: false,
+        },
+        // -------------------------------
         isPaid: {
             type: Boolean,
             required: true,
