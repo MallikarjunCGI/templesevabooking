@@ -143,7 +143,8 @@ const handlePayment = async () => {
 
         // 3. Configure Razorpay Options
         const options = {
-            key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Ensure this is in your .env
+            //key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Ensure this is in your .env
+            key: data.razorpayKey,
             amount: data.razorpayOrder.amount,
             currency: data.razorpayOrder.currency,
             name: "Shree Kshetra Ramtirtha",

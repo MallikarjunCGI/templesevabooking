@@ -80,7 +80,8 @@ const createBooking = asyncHandler(async (req, res) => {
                 id: razorpayOrder.id,
                 amount: razorpayOrder.amount,
                 currency: razorpayOrder.currency
-            }
+            },
+            razorpayKey: process.env.RAZORPAY_KEY_ID
         });
     } catch (error) {
         console.error('Razorpay Order Error:', error);
