@@ -142,52 +142,35 @@ const handlePayment = async () => {
         const { data } = await api.post('/bookings', bookingData);
 
         // 3. Configure Razorpay Options
-const options = {
-  key: data.razorpayKey,
-  amount: data.razorpayOrder.amount,
-  currency: data.razorpayOrder.currency,
-  name: "Shree Kshetra Ramtirtha",
-  description: `Seva: ${currentLang === 'kn' ? seva.titleKn : seva.titleEn}`,
-  order_id: data.razorpayOrder.id,
-
-  // 🔒 Restrict payment methods
-  method: {
-    upi: true,
-    card: false,
-    netbanking: false,
-    wallet: false,
-    paylater: true,
-  },
-
-  // 📱 UPI specific config
-  upi: {
-    flow: "intent", // shows QR + UPI apps
-  },
-
-  handler: function (response) {
-    toast.success('Payment Successful!');
-    navigate('/booking-success', {
-      state: { booking: data.booking }
-    });
-  },
-
-  prefill: {
-    name: formData.name,
-    contact: formData.guestPhone,
-    email: formData.guestEmail,
-  },
-
-  theme: {
-    color: "#ea580c",
-  },
-
-  modal: {
-    ondismiss: function () {
-      setIsBooking(false);
-    },
-  },
-};
-
+        const options = {
+            //key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Ensure this is in your .env
+            key: data.razorpayKey,
+            amount: data.razorpayOrder.amount,
+            currency: data.razorpayOrder.currency,
+            name: "Shree Kshetra Ramtirtha",
+            description: `Seva: ${currentLang === 'kn' ? seva.titleKn : seva.titleEn}`,
+            order_id: data.razorpayOrder.id,
+            handler: function (response) {
+                // This function runs on payment success
+                toast.success('Payment Successful!');
+                navigate('/booking-success', { 
+                    state: { booking: data.booking } 
+                });
+            },
+            prefill: {
+                name: formData.name,
+                contact: formData.guestPhone,
+                email: formData.guestEmail
+            },
+            theme: {
+                color: "#ea580c", // Matches your orange theme
+            },
+            modal: {
+                ondismiss: function() {
+                    setIsBooking(false);
+                }
+            }
+        };
         
 
         const rzp = new window.Razorpay(options);
