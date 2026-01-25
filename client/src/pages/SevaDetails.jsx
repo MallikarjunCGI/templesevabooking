@@ -238,14 +238,6 @@ const SevaDetails = () => {
                             </div>
 
                             <div className="flex items-center space-x-6 text-sm text-gray-500 border-t border-gray-100 pt-4">
-                                <div className="flex items-center">
-                                    <Clock className="w-4 h-4 mr-2 text-orange-500" />
-                                    Duration: 45 Mins
-                                </div>
-                                <div className="flex items-center">
-                                    <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
-                                    Verified Temple
-                                </div>
                             </div>
                         </div>
 
@@ -295,7 +287,7 @@ const SevaDetails = () => {
                 onClose={() => setShowUPI(false)}
                 onConfirm={confirmBooking}
                 amount={total}
-                upiId={settings?.upiId || 'payment@upi'}
+                upiId={settings?.upiId || '7829892976@ybl'}
                 templeName={currentLang === 'kn' ? (seva.templeNameKn || settings?.templeName) : (seva.templeNameEn || settings?.templeName)}
                 sevaName={currentLang === 'kn' ? seva.titleKn : seva.titleEn}
             />
