@@ -2,22 +2,10 @@ const asyncHandler = require('express-async-handler');
 const Booking = require('../models/Booking');
 const Notification = require('../models/Notification');
 const Seva = require('../models/Seva');
-const Razorpay = require('razorpay'); // 1. Import Razorpay
 
-// 2. Initialize Razorpay with your Test Credentials
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-// Add a console log here to debug (remove after it works)
-if (!process.env.RAZORPAY_KEY_ID) {
-    console.error("FATAL ERROR: RAZORPAY_KEY_ID is missing from .env file");
-}
-
-// @desc    Create new booking with Razorpay Order
+// @desc    Create new booking
 // @route   POST /api/bookings
-// @access  Private/Guest
+// @access  Private
 const createBooking = asyncHandler(async (req, res) => {
     const {
         sevaId,
@@ -36,21 +24,8 @@ const createBooking = asyncHandler(async (req, res) => {
 
     if (!sevaId) {
         res.status(400);
-        throw new Error('No seva selected');
-    }
-
-    try {
-        // 3. Create Razorpay Order
-        // Note: amount must be in the smallest currency unit (paise for INR)
-        const options = {
-            amount: Number(totalAmount) * 100, 
-            currency: "INR",
-            receipt: `receipt_${Date.now()}`,
-        };
-
-        const razorpayOrder = await razorpay.orders.create(options);
-
-        // 4. Create the Booking document in MongoDB
+        throw new Error('No seva items');
+    } else {
         const booking = new Booking({
             user: req.user ? req.user._id : null,
             guestName: req.user ? req.user.name : guestName,
@@ -65,80 +40,90 @@ const createBooking = asyncHandler(async (req, res) => {
             bookingType,
             count,
             totalAmount,
-            razorpayOrderId: razorpayOrder.id, // Store the official Order ID
-            isPaid: false, // Set to false initially; update via Webhook or Handler
-            status: 'Pending'
+            isPaid: true, // Mocking payment success for now
+            status: 'Confirmed'
         });
 
         const createdBooking = await booking.save();
 
-        // 5. Respond with both the Booking and the Razorpay Order details
-        res.status(201).json({
-            success: true,
-            booking: createdBooking,
-            razorpayOrder: {
-                id: razorpayOrder.id,
-                amount: razorpayOrder.amount,
-                currency: razorpayOrder.currency
-            },
-            razorpayKey: process.env.RAZORPAY_KEY_ID
+        // Fetch Seva for notification message
+        const sevaDetails = await Seva.findById(sevaId);
+
+        // Create Notification for Admin
+        await Notification.create({
+            type: 'booking',
+            message: `New booking for ${sevaDetails ? sevaDetails.title : 'Seva'} by ${req.user ? req.user.name : (guestName || 'Guest')}`,
+            bookingId: createdBooking._id
         });
-    } catch (error) {
-        console.error('Razorpay Order Error:', error);
-        res.status(500);
-        throw new Error('Could not initiate payment. Please try again.');
+
+        res.status(201).json(createdBooking);
     }
 });
-// @desc    Get all bookings (Admin)
-const getBookings = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({});
-  res.json(bookings);
-});
 
-// @desc    Update booking (Admin)
-const updateBooking = asyncHandler(async (req, res) => {
-  const booking = await Booking.findById(req.params.id);
-
-  if (!booking) {
-    res.status(404);
-    throw new Error('Booking not found');
-  }
-
-  booking.status = req.body.status || booking.status;
-  const updatedBooking = await booking.save();
-
-  res.json(updatedBooking);
-});
-
-// @desc    Delete booking (Admin)
-const deleteBooking = asyncHandler(async (req, res) => {
-  const booking = await Booking.findById(req.params.id);
-
-  if (!booking) {
-    res.status(404);
-    throw new Error('Booking not found');
-  }
-
-  await booking.deleteOne();
-  res.json({ message: 'Booking removed' });
-});
-
-// @desc    Get bookings by phone (Guest tracking)
-const getBookingsByPhone = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({ guestPhone: req.params.phone });
-  res.json(bookings);
-});
-
+// @desc    Get logged in user bookings
+// @route   GET /api/bookings/mybookings
+// @access  Private
 const getMyBookings = asyncHandler(async (req, res) => {
-  const bookings = await Booking.find({ guestPhone: req.params.phone });
-  res.json(bookings);
+    const bookings = await Booking.find({ user: req.user._id }).populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn');
+    res.json(bookings);
 });
 
-module.exports = {
-    createBooking,
-    getMyBookings,
-    getBookings,
-    updateBooking,
-    deleteBooking,
-    getBookingsByPhone,
-};
+// @desc    Get all bookings
+// @route   GET /api/bookings
+// @access  Private/Admin
+const getBookings = asyncHandler(async (req, res) => {
+    const bookings = await Booking.find({}).populate('user', 'id name email').populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn');
+    res.json(bookings);
+});
+
+// @desc    Update booking
+// @route   PUT /api/bookings/:id
+// @access  Private/Admin
+const updateBooking = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
+
+    if (booking) {
+        booking.devoteeName = req.body.devoteeName || booking.devoteeName;
+        booking.gothram = req.body.gothram || booking.gothram;
+        booking.rashi = req.body.rashi || booking.rashi;
+        booking.nakshatra = req.body.nakshatra || booking.nakshatra;
+        booking.bookingDate = req.body.bookingDate || booking.bookingDate;
+        booking.status = req.body.status || booking.status;
+        booking.guestName = req.body.guestName || booking.guestName;
+        booking.guestEmail = req.body.guestEmail || booking.guestEmail;
+        booking.guestPhone = req.body.guestPhone || booking.guestPhone;
+
+        const updatedBooking = await booking.save();
+        res.json(updatedBooking);
+    } else {
+        res.status(404);
+        throw new Error('Booking not found');
+    }
+});
+
+// @desc    Delete booking
+// @route   DELETE /api/bookings/:id
+// @access  Private/Admin
+const deleteBooking = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
+
+    if (booking) {
+        await booking.deleteOne();
+        res.json({ message: 'Booking removed' });
+    } else {
+        res.status(404);
+        throw new Error('Booking not found');
+    }
+});
+
+// @desc    Get bookings by guest phone number
+// @route   GET /api/bookings/track/:phone
+// @access  Public
+const getBookingsByPhone = asyncHandler(async (req, res) => {
+    const bookings = await Booking.find({ guestPhone: req.params.phone })
+        .populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn image')
+        .sort('-createdAt');
+    res.json(bookings);
+});
+
+module.exports = { createBooking, getMyBookings, getBookings, updateBooking, deleteBooking, getBookingsByPhone };

@@ -11,7 +11,7 @@ const getSettings = asyncHandler(async (req, res) => {
     } else {
         // Return defaults if not found
         res.json({
-            templeName: 'Shree Kshetra Ramatheertha',
+            templeName: 'Shree Kshetra Ramtirtha',
             contactEmail: 'contact@temple.com',
             contactPhone: '+91 99999 99999',
             address: 'Temple Address',
@@ -19,7 +19,8 @@ const getSettings = asyncHandler(async (req, res) => {
             timezone: 'IST',
             ritualHours: '06:00 AM - 08:00 PM',
             allowSameDayBooking: true,
-            notifyDevotee: true
+            notifyDevotee: true,
+            upiId: 'yourname@upi'
         });
     }
 });
@@ -40,6 +41,7 @@ const updateSettings = asyncHandler(async (req, res) => {
         settings.ritualHours = req.body.ritualHours || settings.ritualHours;
         settings.allowSameDayBooking = req.body.allowSameDayBooking !== undefined ? req.body.allowSameDayBooking : settings.allowSameDayBooking;
         settings.notifyDevotee = req.body.notifyDevotee !== undefined ? req.body.notifyDevotee : settings.notifyDevotee;
+        settings.upiId = req.body.upiId || settings.upiId;
 
         const updatedSettings = await settings.save();
         res.json(updatedSettings);
