@@ -7,44 +7,92 @@ const bookingSchema = mongoose.Schema(
             required: false,
             ref: 'User',
         },
+        // Contact info for receipt/notification
         guestName: { type: String },
         guestEmail: { type: String },
         guestPhone: { type: String },
+        
+        // Seva link
         seva: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'Seva',
         },
-        devoteeName: { type: String, required: true },
+        // Human readable seva name snapshot
+        sevaName: {
+            type: String,
+        },
+
+        // Devotee Details (Primary Full Name)
+        devoteeName: { 
+            type: String, 
+            required: true // This is the devotee's Full Name
+        },
         gothram: { type: String, required: false },
         rashi: { type: String, required: false },
         nakshatra: { type: String, required: false },
-        bookingDate: { type: Date, default: Date.now },
-        bookingType: { type: String, required: true }, // individual, family
-        count: { type: Number, default: 1 },
+
+        // --- LOCATION FIELDS ---
+        state: { 
+            type: String, 
+            default: 'Karnataka' 
+        },
+        district: { 
+            type: String, 
+            default: 'Belagavi' 
+        },
+        taluk: { 
+            type: String, 
+            default: 'Athani' 
+        },
+        pincode: { type: String },
+        place: { type: String }, // Village or Town
+        address: { type: String }, // Full street address
+
+        // --- PAYMENT FIELDS ---
+        paymentMode: {
+            type: String,
+            required: true,
+            enum: ['upi', 'cash'], // Restricts input to these two options
+            default: 'upi'
+        },
         totalAmount: {
             type: Number,
             required: true,
             default: 0.0,
         },
-        // --- NEW FIELDS FOR RAZORPAY ---
-        razorpayOrderId: {
-            type: String,
-            required: false, // Set to true if you want every booking to have an order
-        },
-        razorpayPaymentId: {
-            type: String, // Useful for storing the actual transaction ID after success
-            required: false,
-        },
-        // -------------------------------
         isPaid: {
             type: Boolean,
             required: true,
             default: false,
         },
+        
+        // Razorpay Integration Fields (Used if paymentMode is 'upi')
+        razorpayOrderId: {
+            type: String,
+            required: false,
+        },
+        razorpayPaymentId: {
+            type: String,
+            required: false,
+        },
+
+        // --- BOOKING LOGISTICS ---
+        bookingDate: { type: Date, default: Date.now },
+        bookingType: { 
+            type: String, 
+            required: true,
+            default: 'individual' 
+        }, 
+        count: { type: Number, default: 1 },
         status: {
             type: String,
             default: 'Pending', // Pending, Confirmed, Completed
+        },
+        // Photo order completion flag (for photo-order sevas)
+        photoOrderCompleted: {
+            type: Boolean,
+            default: false,
         },
     },
     {

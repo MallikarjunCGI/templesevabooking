@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation, EffectFade } from 'swiper/modules';
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 const HeroCarousel = () => {
     const { t, i18n } = useTranslation();
     const currentLang = i18n.language;
+    const navigate = useNavigate();
 
     const [slides, setSlides] = useState([]);
     const defaultSlides = [
@@ -111,8 +113,8 @@ const HeroCarousel = () => {
                 modules={[Autoplay, Pagination, Navigation, EffectFade]}
                 className="mySwiper h-full w-full"
             >
-                {slides.map((slide) => (
-                    <SwiperSlide key={slide.id}>
+                {slides.map((slide, index) => (
+                    <SwiperSlide key={slide._id ?? slide.id ?? index}>
                         <div
                             onClick={() => navigate('/sevas')}
                             className="relative h-full w-full cursor-pointer group/slide"
@@ -121,6 +123,7 @@ const HeroCarousel = () => {
                             <img
                                 src={slide.image}
                                 alt={slide.title}
+                                onError={(e) => { e.currentTarget.src = '/images/Hero-1.jpeg'; e.currentTarget.onerror = null; }}
                                 className="absolute inset-0 w-full h-full object-cover group-hover/slide:scale-105 transition-transform duration-700"
                             />
 

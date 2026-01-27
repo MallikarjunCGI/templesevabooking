@@ -9,33 +9,46 @@ const Seva = require('../models/Seva');
 const createBooking = asyncHandler(async (req, res) => {
     const {
         sevaId,
+        sevaName,
         devoteeName,
-        gothram,
-        rashi,
-        nakshatra,
         bookingType,
         count,
         totalAmount,
-        guestName,
-        guestEmail,
         guestPhone,
-        bookingDate
+        bookingDate,
+        // Location fields
+        state,
+        district,
+        taluk,
+        pincode,
+        place,
+        address,
+        paymentMode
     } = req.body;
 
     if (!sevaId) {
         res.status(400);
         throw new Error('No seva items');
     } else {
+        // Fetch Seva details to allow a readable sevaName snapshot if not provided
+        const sevaDetails = await Seva.findById(sevaId);
+
         const booking = new Booking({
             user: req.user ? req.user._id : null,
-            guestName: req.user ? req.user.name : guestName,
-            guestEmail: req.user ? req.user.email : guestEmail,
-            guestPhone: req.user ? req.user.phone : guestPhone,
+            // Prefer explicit guestPhone from payload; fall back to authenticated user's phone
+            guestPhone: guestPhone || (req.user ? req.user.phone : null),
             seva: sevaId,
+            // Use provided sevaName or snapshot from Seva record
+            sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
             devoteeName,
-            gothram,
-            rashi,
-            nakshatra,
+            // Persist location fields
+            state,
+            district,
+            taluk,
+            pincode,
+            place,
+            address,
+            paymentMode,
             bookingDate: bookingDate || Date.now(),
             bookingType,
             count,
@@ -46,13 +59,11 @@ const createBooking = asyncHandler(async (req, res) => {
 
         const createdBooking = await booking.save();
 
-        // Fetch Seva for notification message
-        const sevaDetails = await Seva.findById(sevaId);
-
         // Create Notification for Admin
+        const nameFor = req.user ? req.user.name : (devoteeName || guestPhone || 'Guest');
         await Notification.create({
             type: 'booking',
-            message: `New booking for ${sevaDetails ? sevaDetails.title : 'Seva'} by ${req.user ? req.user.name : (guestName || 'Guest')}`,
+            message: `New booking for ${sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : 'Seva'} by ${nameFor}`,
             bookingId: createdBooking._id
         });
 
@@ -89,9 +100,21 @@ const updateBooking = asyncHandler(async (req, res) => {
         booking.nakshatra = req.body.nakshatra || booking.nakshatra;
         booking.bookingDate = req.body.bookingDate || booking.bookingDate;
         booking.status = req.body.status || booking.status;
-        booking.guestName = req.body.guestName || booking.guestName;
-        booking.guestEmail = req.body.guestEmail || booking.guestEmail;
+        // update contact phone if provided
         booking.guestPhone = req.body.guestPhone || booking.guestPhone;
+        // Location and additional editable fields
+        booking.state = req.body.state || booking.state;
+        booking.district = req.body.district || booking.district;
+        booking.taluk = req.body.taluk || booking.taluk;
+        booking.pincode = req.body.pincode || booking.pincode;
+        booking.place = req.body.place || booking.place;
+        booking.address = req.body.address || booking.address;
+        booking.paymentMode = req.body.paymentMode || booking.paymentMode;
+        // Allow changing seva/sevaName and totalAmount if provided
+        if (req.body.seva) booking.seva = req.body.seva;
+        if (req.body.sevaName) booking.sevaName = req.body.sevaName;
+        if (req.body.totalAmount !== undefined) booking.totalAmount = req.body.totalAmount;
+        if (typeof req.body.photoOrderCompleted === 'boolean') booking.photoOrderCompleted = req.body.photoOrderCompleted;
 
         const updatedBooking = await booking.save();
         res.json(updatedBooking);

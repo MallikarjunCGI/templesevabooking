@@ -8,7 +8,8 @@
         "login": "Login",
         "register": "Register",
         "temple_name_prefix": "Shree Kshetra",
-        "temple_name_suffix": "Ramteertha"
+        "temple_name_suffix": "Ramteertha",
+           "direct_book_seva": "Direct Seva Book"
     },
     "home": {
         "hero_title_1": "Divine Shree Kshetra Ramteertha",
@@ -27,6 +28,9 @@
         "explore_btn": "Explore All Sevas",
         "search_placeholder": "Search for a Seva or Pooja...",
         "find_btn": "Find Sevas"
+    ,
+        "error_invalid_phone": "Please enter a valid 10-digit mobile number",
+        "error_fetch_bookings": "Failed to fetch bookings. Please try again."
     },
     "auth": {
         "login_title": "Welcome Back",
@@ -46,6 +50,7 @@
     "seva_card": {
         "book_now": "Book Now",
         "view_details": "View Details"
+     
     },
     "seva_details": {
         "about": "About this Seva",
@@ -62,6 +67,43 @@
         "gothram": "Gothram",
         "rashi": "Rashi",
         "nakshatra": "Nakshatra"
+        ,
+        "label_seva_name": "Seva Name",
+        "label_seva_date": "Seva Date",
+        "label_mobile": "Mobile Number",
+        "label_full_name": "Full Name",
+        "label_state": "State",
+        "label_district": "District",
+        "label_taluk": "Taluk",
+        "label_pincode": "Pincode",
+        "label_place": "Place (Village/Town)",
+        "label_address": "Full Address",
+        "label_payment_mode": "Payment Mode",
+        "placeholder_10_digit": "10-digit number",
+        "placeholder_devotee_name": "Devotee Name",
+        "placeholder_village_name": "Village Name",
+        "placeholder_address": "House No, Street etc.",
+        "error_phone": "Please enter a valid 10-digit mobile number",
+        "error_name": "Please enter a valid name (max 100 chars)",
+        "error_select_seva": "Please select a Seva",
+        "error_pincode": "Pincode must be 6 digits",
+        "error_place": "Place must be at most 100 characters",
+        "error_address": "Address must be at most 250 characters",
+        "failed_load_sevas": "Failed to load sevas",
+        "failed_load_seva": "Failed to load seva details",
+        "booking_failed": "Booking failed"
+        ,"upi": "UPI",
+        "cash": "Cash"
+    },
+    
+    "upi": {
+        "title": "UPI Payment",
+        "scan_to_pay": "Scan to Pay",
+        "simple_secure": "Simple & Secure",
+        "scan_pay_confirm": "Scan, Pay & Confirm",
+        "pay_exactly": "Pay exactly ₹{{amount}} and click confirm below.",
+        "confirm_payment": "Confirm Payment",
+        "secure_transaction": "Secure Transaction"
     },
     "pricing": {
         "title": "Booking Summary",
@@ -74,7 +116,31 @@
         "no_bookings": "You haven't booked any sevas yet.",
         "payment_success": "Payment Successful",
         "receipt": "Receipt",
-        "receipt_downloaded": "Receipt Downloaded"
+        "receipt_downloaded": "Receipt Downloaded",
+        "success_title": "Booking Successful!",
+        "success_subtitle": "Your seva has been successfully booked. May the blessings be with you.",
+        "receipt_title": "Shri Ramateertha Seva Booking Receipt",
+        "receipt_header": "Seva Booking Receipt",
+        "booking_id": "Booking ID",
+        "seva_name": "Seva Name",
+        "mobile_number": "Mobile Number",
+        "devotee_name": "Devotee Name",
+        "date_of_seva": "Date of Seva",
+        "amount_paid": "Amount Paid",
+        "payment_mode": "Payment Mode",
+        "print_window_error": "Unable to open print window. Please allow popups.",
+        "print_receipt": "Print Receipt",
+        "pdf_title": "Temple Seva Booking",
+        "booking_reference": "Booking Reference",
+        "gothram": "Gothram",
+        "rashi_nakshatra": "Rashi / Nakshatra",
+        "seva_date": "Seva Date",
+        "booking_type": "Booking Type",
+        "amount_paid_label": "Amount Paid",
+        "payment_status": "Payment Status",
+        "booked_by_guest": "Booked By (Guest)",
+        "pdf_footer": "Thank you for your booking. May you be blessed.",
+        "generate_error": "Could not generate receipt"
     },
     "listing": {
         "title": "Explore Sacred Sevas",
@@ -92,7 +158,7 @@
             "title": "Temple Admin",
             "subtitle": "Operational Control",
             "dashboard": "Dashboard",
-            "sankalpa_list": "Sankalpa List",
+            "sankalpa_list": "Seva Register",
             "seva_management": "Seva Management",
             "hero_management": "Hero Carousel",
             "settings": "Settings",
@@ -152,7 +218,7 @@
             "op_failed": "Operation Failed"
         },
         "sankalpa": {
-            "title": "Sankalpa Register",
+            "title": "Seva Register",
             "subtitle": "Devotee details for daily ceremonial rituals",
             "export_pdf": "Export to PDF",
             "search_placeholder": "Find by devotee name or seva offering...",
@@ -163,7 +229,7 @@
             "col_date": "Ritual Date",
             "col_status": "Status",
             "no_records": "No records match your search criteria.",
-            "pdf_title": "Daily Sankalpa List",
+            "pdf_title": "Daily Seva List",
             "pdf_generated": "Generated on",
             "pdf_exported": "PDF Exported"
         },

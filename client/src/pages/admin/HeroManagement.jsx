@@ -85,6 +85,35 @@ const HeroManagement = () => {
         }
     };
 
+    // File upload state & handlers
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleFileSelect = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setSelectedFile(e.target.files[0]);
+        }
+    };
+
+    const uploadSelectedFile = async () => {
+        if (!selectedFile) {
+            toast.error('No file selected');
+            return;
+        }
+        const fd = new FormData();
+        fd.append('image', selectedFile);
+        try {
+            const { data } = await api.post('/uploads/hero', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            if (data && data.url) {
+                setFormData(prev => ({ ...prev, image: data.url }));
+                toast.success('Image uploaded');
+                setSelectedFile(null);
+            }
+        } catch (e) {
+            console.error('Upload failed', e);
+            toast.error('Upload failed');
+        }
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to remove this slide?')) {
             try {
@@ -167,7 +196,7 @@ const HeroManagement = () => {
                                 <img
                                     src={slide.image}
                                     alt={currentLang === 'kn' ? (slide.titleKn || slide.title) : (slide.titleEn || slide.title)}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
                                     onError={(e) => { e.target.src = 'https://via.placeholder.com/1200x600?text=Invalid+Image+URL' }}
                                 />
                                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center">
@@ -343,6 +372,12 @@ const HeroManagement = () => {
                                             onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                                         />
                                     </div>
+                                    <div className="mt-2 flex items-center gap-3">
+                                        <input type="file" accept="image/*" id="heroFile" onChange={(e) => handleFileSelect(e)} className="hidden" />
+                                        <label htmlFor="heroFile" className="px-3 py-2 bg-white border rounded-lg cursor-pointer">Choose file</label>
+                                        <button type="button" onClick={() => uploadSelectedFile()} className="px-3 py-2 bg-orange-600 text-white rounded-lg">Upload</button>
+                                        <span className="text-sm text-gray-500">Or paste an external URL above</span>
+                                    </div>
                                 </div>
 
                                 {/* Preview Section */}
@@ -354,7 +389,7 @@ const HeroManagement = () => {
                                                 <img
                                                     src={formData.image}
                                                     alt="Preview"
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover object-top"
                                                     onError={(e) => { e.target.src = 'https://via.placeholder.com/800x400?text=Invalid+Image+URL+Provided' }}
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">

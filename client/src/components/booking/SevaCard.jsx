@@ -14,7 +14,7 @@ const SevaCard = ({ seva }) => {
             {/* Image Section */}
             <div className="relative h-64 overflow-hidden">
                 <img
-                    src={seva.image || "/api/placeholder/400/320"}
+                    src={seva.image || '/images/MainPhoto.jpeg'}
                     alt={currentLang === 'kn' ? (seva.titleKn || seva.titleEn || seva.title) : (seva.titleEn || seva.titleKn || seva.title)}
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                 />
@@ -44,18 +44,17 @@ const SevaCard = ({ seva }) => {
                 </p>
 
                 <div className="pt-4 border-t border-gray-100 flex justify-between items-center mt-auto">
-                    <div className="flex items-center text-xs text-gray-500 font-medium">
-                        <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                        Daily
+                    <div className="flex items-center text-sm text-gray-900 font-black">
+                        ₹{seva.price}
                     </div>
 
-                    <Link
-                        to={`/sevas/${seva._id}`}
-                        className="flex items-center text-orange-600 hover:text-orange-700 font-bold text-sm group/btn cursor-pointer"
+                    <button
+                        onClick={() => navigate(`/sevas/${seva._id}`, { state: { selectedSevaId: seva._id } })}
+                        className="flex items-center text-orange-600 hover:text-orange-700 font-bold text-sm group/btn cursor-pointer bg-transparent border-none outline-none"
                     >
                         {t('seva_card.book_now')}
                         <ArrowRight className="w-4 h-4 ml-1 transform group-hover/btn:translate-x-1 transition-transform" />
-                    </Link>
+                    </button>
                 </div>
             </div>
         </div>

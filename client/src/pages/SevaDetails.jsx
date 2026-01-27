@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, MapPin, ShieldCheck, Loader2 } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, MapPin, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+
 import SankalpaForm from '../components/booking/SankalpaForm';
 import PricingWidget from '../components/booking/PricingWidget';
-import api from '../utils/api';
 import UPILayer from '../components/booking/UPILayer';
+import api from '../utils/api';
 
 import { useTranslation } from 'react-i18next';
 
 const SevaDetails = () => {
     const { id } = useParams();
+    const isDirectBooking = !id;
+    const [allSevas, setAllSevas] = useState([]);
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated } = useSelector((state) => state.auth);
 
     const [seva, setSeva] = useState(null);
-    const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showUPI, setShowUPI] = useState(false);
-    const [isBooking, setIsBooking] = useState(false);
+    const [settings, setSettings] = useState(null);
 
-    // Form State
+    // Form state
     const [formData, setFormData] = useState({
         name: '',
         gothram: '',
@@ -29,7 +31,8 @@ const SevaDetails = () => {
         nakshatra: '',
         guestName: '',
         guestEmail: '',
-        guestPhone: ''
+        guestPhone: '',
+        sevaId: '' // 👈 IMPORTANT
     });
 
     const [errors, setErrors] = useState({
@@ -37,104 +40,195 @@ const SevaDetails = () => {
         guestPhone: false
     });
 
-    // Date State
-    const today = new Date().toISOString().split('T')[0];
+    // Date (local timezone)
+    const localYYYYMMDD = (d = new Date()) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+    const today = localYYYYMMDD();
     const [selectedDate, setSelectedDate] = useState(today);
 
-    // Pricing State
+    // Pricing
     const [count, setCount] = useState(1);
     const [total, setTotal] = useState(0);
 
-    useEffect(() => {
-        const fetchSeva = async () => {
-            try {
-                console.log(`Fetching seva details for ID: ${id}`);
-                const { data } = await api.get(`/sevas/${id}`);
-                console.log('Seva data received:', data);
-                if (!data) {
-                    console.error('No data received from API');
-                    toast.error('Seva details not found');
-                    navigate('/sevas');
-                    return;
-                }
-                setSeva(data);
-            } catch (error) {
-                console.error('Failed to load seva details:', error);
-                toast.error('Failed to load seva details');
-                navigate('/sevas');
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [showUPI, setShowUPI] = useState(false);
+    const [isBooking, setIsBooking] = useState(false);
 
-        const fetchSettings = async () => {
-            try {
-                const { data } = await api.get('/settings');
-                setSettings(data);
-            } catch (error) {
-                console.error('Failed to load settings:', error);
-            }
-        };
+    const { i18n, t } = useTranslation();
+    const currentLang = i18n.language;
 
-        // Check for pre-filled data from lookup
-        const savedData = sessionStorage.getItem('prefill_booking');
-        if (savedData) {
-            try {
-                const parsed = JSON.parse(savedData);
-                setFormData(prev => ({ ...prev, ...parsed }));
-                sessionStorage.removeItem('prefill_booking');
-                toast.success('Continuing with your saved details!');
-            } catch (error) {
-                console.error('Failed to parse prefill data:', error);
-            }
+useEffect(() => {
+    const fetchAllSevas = async () => {
+        try {
+            const { data } = await api.get('/sevas');
+            setAllSevas(data);
+        } catch (error) {
+            console.error('Failed to fetch sevas', error);
+                toast.error(t('sankalpa.failed_load_sevas'));
         }
+    };
 
-        if (id) {
-            fetchSeva();
-            fetchSettings();
-        } else {
-            console.error('No ID provided in URL');
+    const fetchSingleSeva = async () => {
+        try {
+            const { data } = await api.get(`/sevas/${id}`);
+            setSeva(data);
+
+            // Preselect seva
+            setFormData(prev => ({
+                ...prev,
+                sevaId: data._id
+            }));
+        } catch (error) {
+                toast.error(t('sankalpa.failed_load_seva'));
             navigate('/sevas');
+        } finally {
+            setLoading(false);
         }
-    }, [id, navigate]);
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const { data } = await api.get('/settings');
+            setSettings(data);
+        } catch (error) {
+            console.error('Failed to load settings');
+        }
+    };
+
+    fetchSettings();
+    fetchAllSevas();
+
+    if (!isDirectBooking) {
+        fetchSingleSeva();
+    } else {
+        setLoading(false);
+    }
+}, [id]);
+
+// Read any prefill data placed in sessionStorage (e.g., from phone lookup)
+useEffect(() => {
+    try {
+        const raw = sessionStorage.getItem('prefill_booking');
+        if (raw) {
+            console.log('Raw prefill_booking found:', raw);
+            const pre = JSON.parse(raw);
+            console.log('Parsed prefill_booking:', pre);
+            // Filter out empty values so we don't overwrite good defaults with blanks
+            const filtered = Object.fromEntries(
+                Object.entries(pre).filter(([, v]) => v !== undefined && v !== null && v !== '')
+            );
+            console.log('Filtered prefill_booking:', filtered);
+            // Merge prefill so it overrides only when values are present
+            setFormData(prev => ({ ...prev, ...filtered }));
+
+            // If prefill contains a bookingDate, apply it to the selectedDate (normalize to yyyy-mm-dd)
+            if (filtered.bookingDate) {
+                try {
+                    const d = new Date(filtered.bookingDate);
+                    if (!isNaN(d.getTime())) {
+                        setSelectedDate(localYYYYMMDD(d));
+                    }
+                } catch (e) {
+                    // ignore invalid date
+                }
+            }
+            sessionStorage.removeItem('prefill_booking');
+        }
+    } catch (e) {
+        console.warn('Failed to apply prefill booking', e);
+    }
+}, []);
+
+const selectedSeva =
+    allSevas.find(s => s._id === formData.sevaId) || seva;
+
+// Ensure selectedDate defaults to today when a seva is selected and no date provided
+useEffect(() => {
+    if (selectedSeva) {
+        try {
+            if (!selectedDate || selectedDate === '') {
+                setSelectedDate(today);
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+}, [selectedSeva]);
+
+const allowCustomAmount = (selectedSeva && ((selectedSeva.titleEn || selectedSeva.title || '').toLowerCase().includes('sarva seva')));
+
 
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        // Clear error when user starts typing
+        setFormData(prev => ({ ...prev, [name]: value }));
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: false }));
         }
     };
 
+    const handlePayment = () => {
+        const errs = {};
+        const messages = [];
 
-    const handlePayment = async () => {
-        // if (!isAuthenticated) {
-        //     toast.error('Please login to book a seva');
-        //     navigate('/login');
-        //     return;
-        // }
+        // Name: required, reasonable length
+        if (!formData.name || !formData.name.trim()) {
+            errs.name = true;
+            messages.push(t('sankalpa.error_name'));
+        } else if (formData.name.trim().length > 100) {
+            errs.name = true;
+            messages.push(t('sankalpa.error_name'));
+        }
 
-        const newErrors = {
-            name: !formData.name,
-            guestPhone: !isAuthenticated && !formData.guestPhone
-        };
+        // Seva must be selected
+        if (!formData.sevaId) {
+            errs.sevaId = true;
+            messages.push(t('sankalpa.error_select_seva'));
+        }
 
-        setErrors(newErrors);
+        // Guest phone: if user is not authenticated, require 10 digit numeric phone
+        if (!isAuthenticated) {
+            const phone = (formData.guestPhone || '').replace(/\D/g, '');
+            if (!phone || phone.length !== 10) {
+                    errs.guestPhone = true;
+                    messages.push(t('home.error_invalid_phone'));
+            }
+        }
 
-        if (newErrors.name || newErrors.guestPhone) {
-            toast.error('Please fill all mandatory fields');
+        // Pincode: if provided, must be 6 digits
+        if (formData.pincode) {
+            const pin = (formData.pincode || '').replace(/\D/g, '');
+            if (pin.length !== 6) {
+                errs.pincode = true;
+                messages.push(t('sankalpa.error_pincode'));
+            }
+        }
 
-            // Focus the first error field
-            const firstError = newErrors.name ? 'name' : 'guestPhone';
-            setTimeout(() => {
-                const element = document.getElementsByName(firstError)[0];
-                if (element) {
-                    element.focus();
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 100);
+        // Place (village): optional but max length
+            if (formData.place && formData.place.length > 100) {
+            errs.place = true;
+            messages.push(t('sankalpa.error_place'));
+        }
+
+        // Address: optional but max length
+        if (formData.address && formData.address.length > 250) {
+            errs.address = true;
+            messages.push(t('sankalpa.error_address'));
+        }
+
+        setErrors(prev => ({ ...prev, ...errs }));
+
+        if (messages.length > 0) {
+            toast.error(messages[0]);
+            return;
+        }
+
+        // If payment mode is cash, skip UPI and confirm booking immediately
+        if (formData.paymentMode === 'cash') {
+            confirmBooking();
             return;
         }
 
@@ -144,46 +238,45 @@ const SevaDetails = () => {
     const confirmBooking = async () => {
         setIsBooking(true);
         try {
-            const bookingData = {
-                sevaId: id,
+            const payload = {
+                sevaId: formData.sevaId,
+                // store a human-readable seva snapshot
+                sevaName: selectedSeva?.titleEn || selectedSeva?.title || '',
                 devoteeName: formData.name,
-                gothram: formData.gothram,
-                rashi: formData.rashi,
-                nakshatra: formData.nakshatra,
                 bookingType: 'individual',
-                count: count,
+                count,
                 totalAmount: total,
-                guestName: formData.guestName,
-                guestEmail: formData.guestEmail,
                 guestPhone: formData.guestPhone,
-                bookingDate: selectedDate
+                bookingDate: selectedDate,
+                // Location fields
+                state: formData.state,
+                district: formData.district,
+                taluk: formData.taluk,
+                pincode: formData.pincode,
+                place: formData.place,
+                address: formData.address,
+                paymentMode: formData.paymentMode
             };
 
-            const { data: responseData } = await api.post('/bookings', bookingData);
-            toast.success('Payment Confirmed!');
+            const { data } = await api.post('/bookings', payload);
+            toast.success(t('bookings.success_title'));
 
-            // Navigate to success page with booking data for receipt
             navigate('/booking-success', {
                 state: {
                     booking: {
-                        ...responseData,
-                        // Ensure we have the seva details we just displayed
-                        seva: seva
+                        ...data,
+                        // include the currently selected seva object so the receipt shows correct seva details
+                        seva: selectedSeva
                     }
                 }
             });
-
-        } catch (error) {
-            console.error(error);
-            toast.error('Booking failed. Please try again.');
+        } catch (e) {
+            toast.error(t('sankalpa.booking_failed'));
         } finally {
             setIsBooking(false);
             setShowUPI(false);
         }
     };
-
-    const { i18n, t } = useTranslation();
-    const currentLang = i18n.language;
 
     if (loading) {
         return (
@@ -193,33 +286,31 @@ const SevaDetails = () => {
         );
     }
 
-    if (!seva) return <div className="text-center py-20">Seva not found</div>;
+    if (!seva) return null;
 
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
-            {/* Hero Section */}
-            <div className="relative h-56 sm:h-64 md:h-80 w-full bg-gray-900">
+            {/* Header */}
+            <div className="relative h-64 bg-black">
                 <img
                     src={seva.image}
-                    alt={currentLang === 'kn' ? seva.titleKn : seva.titleEn}
+                    alt={seva.titleEn}
                     className="w-full h-full object-cover opacity-60"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8 md:p-12 max-w-7xl mx-auto">
+                <div className="absolute inset-0 p-6 flex flex-col justify-end max-w-7xl mx-auto">
                     <button
                         onClick={() => navigate(-1)}
-                        className="absolute top-4 sm:top-6 left-4 sm:left-6 text-white hover:text-orange-200 flex items-center transition-colors font-bold group"
+                        className="absolute top-4 left-4 text-white flex items-center font-bold"
                     >
-                        <ArrowLeft className="w-5 h-5 mr-1 transform group-hover:-translate-x-1 transition-transform" />
+                        <ArrowLeft className="w-5 h-5 mr-1" />
                         {t('common.back')}
                     </button>
-                    <span className="text-orange-300 font-bold tracking-wider uppercase text-[10px] sm:text-xs mb-1 sm:mb-2">
-                        {currentLang === 'kn' ? (seva.templeNameKn || seva.templeNameEn || seva.templeName || seva.temple) : (seva.templeNameEn || seva.templeNameKn || seva.templeName || seva.temple)}
-                    </span>
-                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-tight font-serif drop-shadow-lg">
-                        {currentLang === 'kn' ? (seva.titleKn || seva.titleEn || seva.title) : (seva.titleEn || seva.titleKn || seva.title)}
+                    <h1 className="text-4xl font-black text-white">
+                        {currentLang === 'kn' ? seva.titleKn : seva.titleEn}
                     </h1>
-                    <p className="text-gray-200 flex items-center text-xs sm:text-sm mt-1">
-                        <MapPin className="w-3.5 h-3.5 mr-1.5" /> {currentLang === 'kn' ? (seva.locationKn || seva.locationEn || seva.location || seva.place) : (seva.locationEn || seva.locationKn || seva.location || seva.place)}
+                    <p className="text-gray-200 flex items-center text-sm mt-1">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {currentLang === 'kn' ? seva.locationKn : seva.locationEn}
                     </p>
                 </div>
             </div>
@@ -227,78 +318,54 @@ const SevaDetails = () => {
             <div className="container mx-auto px-4 max-w-7xl -mt-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm p-6 md:p-8">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('seva_details.about')}</h2>
-                            <div className="prose prose-orange max-w-none">
-                                <p className="text-gray-600 leading-relaxed text-lg italic bg-orange-50/50 p-6 rounded-2xl border border-orange-100/50">
-                                    {currentLang === 'kn' ? (seva.descriptionKn || seva.descriptionEn || seva.description) : (seva.descriptionEn || seva.descriptionKn || seva.description)}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center space-x-6 text-sm text-gray-500 border-t border-gray-100 pt-4">
-                            </div>
-                        </div>
-
-                        {/* Sankalpa Form */}
-                        <div className="bg-white rounded-xl shadow-sm p-6 md:p-8">
-                            <SankalpaForm
-                                formData={formData}
-                                handleChange={handleFormChange}
-                                isAuthenticated={isAuthenticated}
-                                selectedDate={selectedDate}
-                                setSelectedDate={setSelectedDate}
-                                errors={errors}
-                            />
-                        </div>
+                    {/* Form */}
+                    <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+<SankalpaForm
+    formData={formData}
+    handleChange={handleFormChange}
+    selectedDate={selectedDate}
+    setSelectedDate={setSelectedDate}
+    errors={errors}
+    sevas={allSevas}
+/>
                     </div>
 
-                    {/* Sidebar / Pricing */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-6 form-wrapper">
-                            <PricingWidget
-                                basePrice={seva.price}
-                                count={count}
-                                setCount={setCount}
-                                total={total}
-                                setTotal={setTotal}
-                            />
+                    {/* Pricing */}
+                    <div className="lg:col-span-1 sticky top-24 space-y-6">
+<PricingWidget
+    key={selectedSeva?._id || 'pricing'}
+    basePrice={selectedSeva?.price || 0}
+    count={count}
+    setCount={setCount}
+    total={total}
+    setTotal={setTotal}
+    allowCustomAmount={allowCustomAmount}
+/>
+                        
 
-                            <button
-                                onClick={handlePayment}
-                                className="w-full py-4 rounded-xl font-bold text-lg transition transform active:scale-95 shadow-lg bg-orange-600 text-white hover:bg-orange-700"
-                            >
-                                {t('seva_details.proceed_pay')} ₹{total}
-                            </button>
-
-                            <p className="text-center text-xs text-gray-400">
-                                {t('seva_details.secure_payment')}
-                            </p>
-                        </div>
+                        <button
+                            onClick={handlePayment}
+                            className="w-full py-4 rounded-xl font-bold text-lg bg-orange-600 text-white hover:bg-orange-700"
+                        >
+                            {t('seva_details.proceed_pay')} ₹{total}
+                        </button>
                     </div>
-
                 </div>
             </div>
 
-            {/* UPI Payment Layer */}
             <UPILayer
                 isOpen={showUPI}
                 onClose={() => setShowUPI(false)}
                 onConfirm={confirmBooking}
                 amount={total}
-                upiId={settings?.upiId || '7829892976@ybl'}
-                templeName={currentLang === 'kn' ? (seva.templeNameKn || settings?.templeName) : (seva.templeNameEn || settings?.templeName)}
-                sevaName={currentLang === 'kn' ? seva.titleKn : seva.titleEn}
+                upiId={settings?.upiId}
+                templeName={seva.templeNameEn}
+                sevaName={seva.titleEn}
             />
 
-            {/* Loading Overlay when booking */}
             {isBooking && (
-                <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center">
-                        <Loader2 className="w-12 h-12 text-orange-600 animate-spin mb-4" />
-                        <p className="font-bold text-gray-800">Processing Your Booking...</p>
-                    </div>
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <Loader2 className="w-12 h-12 text-orange-600 animate-spin" />
                 </div>
             )}
         </div>

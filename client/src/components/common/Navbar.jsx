@@ -67,7 +67,6 @@ const Navbar = () => {
                                 {t('nav.book_seva')}
                             </Link>
 
-
                             {isAuthenticated && user?.role === 'admin' && (
                                 <Link
                                     to="/admin"

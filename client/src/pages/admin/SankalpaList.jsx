@@ -15,6 +15,10 @@ const SankalpaList = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentBooking, setCurrentBooking] = useState(null);
     const [editFormData, setEditFormData] = useState({});
+    const [sevas, setSevas] = useState([]);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    
 
     const fetchBookings = async () => {
         try {
@@ -28,8 +32,18 @@ const SankalpaList = () => {
         }
     };
 
+    const fetchSevas = async () => {
+        try {
+            const { data } = await api.get('/sevas');
+            setSevas(data);
+        } catch (e) {
+            console.warn('Failed to fetch sevas', e);
+        }
+    };
+
     useEffect(() => {
         fetchBookings();
+        fetchSevas();
     }, []);
 
     const handleDelete = async (id) => {
@@ -47,12 +61,17 @@ const SankalpaList = () => {
     const openEditModal = (booking) => {
         setCurrentBooking(booking);
         setEditFormData({
-            devoteeName: booking.devoteeName,
-            gothram: booking.gothram,
-            rashi: booking.rashi,
-            nakshatra: booking.nakshatra,
+            devoteeName: booking.devoteeName || '',
+            gothram: booking.gothram || '',
+            rashi: booking.rashi || '',
+            nakshatra: booking.nakshatra || '',
             bookingDate: booking.bookingDate ? booking.bookingDate.split('T')[0] : '',
-            status: booking.status
+            status: booking.status || '',
+            guestPhone: booking.guestPhone || '',
+            place: booking.place || '',
+            pincode: booking.pincode || '',
+            totalAmount: booking.totalAmount || 0,
+            seva: booking.seva?._id || booking.seva
         });
         setIsEditModalOpen(true);
     };
@@ -78,23 +97,15 @@ const SankalpaList = () => {
             doc.setTextColor(100);
             doc.text(`${t('admin.sankalpa.pdf_generated')}: ${new Date().toLocaleString()}`, 14, 30);
 
-            const tableColumn = [
-                t('admin.sankalpa.col_info'),
-                t('admin.sankalpa.col_gothram'),
-                t('sankalpa.rashi'),
-                t('sankalpa.nakshatra'),
-                t('admin.sankalpa.col_seva'),
-                "Contact Info",
-                t('admin.sankalpa.col_date')
-            ];
-            const tableRows = bookings.map(item => [
-                item.devoteeName,
-                item.gothram,
-                item.rashi,
-                item.nakshatra,
-                item.seva?.title,
-                `${item.guestName || ''} (${item.guestEmail || item.guestPhone || ''})`,
-                new Date(item.bookingDate).toLocaleDateString()
+            const tableColumn = ['Phone','Devotee Name','Seva Name','Amount','Booking Date','Village','Pincode'];
+            const tableRows = filteredBookings.map(item => [
+                item.guestPhone || item.user?.phone || '',
+                item.devoteeName || '',
+                item.sevaName || item.seva?.titleEn || item.seva?.title || '',
+                item.totalAmount || 0,
+                item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : '',
+                item.place || '',
+                item.pincode || ''
             ]);
 
             doc.autoTable({
@@ -112,10 +123,87 @@ const SankalpaList = () => {
         }
     };
 
-    const filteredBookings = bookings.filter(item =>
-        item.devoteeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.seva?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleExportCSV = () => {
+        try {
+            const header = ['Phone Number','Devotee Name','Seva Name','Amount','Booking Date','Village','Pincode'];
+            const rows = filteredBookings.map(item => [
+                item.guestPhone || item.user?.phone || '',
+                item.devoteeName || '',
+                item.sevaName || item.seva?.titleEn || item.seva?.title || '',
+                item.totalAmount || 0,
+                item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : '',
+                item.place || '',
+                item.pincode || ''
+            ]);
+
+            const csvContent = [header, ...rows].map(e => e.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Seva_List_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success('CSV exported');
+        } catch (e) {
+            toast.error('Failed to export CSV');
+        }
+    };
+
+    const [sortBy, setSortBy] = useState('bookingDate');
+    const [sortDir, setSortDir] = useState('desc');
+
+    const filteredBookings = bookings.filter(item => {
+        // Date range filter
+        const bd = item.bookingDate ? new Date(item.bookingDate) : null;
+        if (startDate) {
+            const s = new Date(startDate);
+            if (!bd || bd < s) return false;
+        }
+        if (endDate) {
+            const e = new Date(endDate);
+            e.setHours(23,59,59,999);
+            if (!bd || bd > e) return false;
+        }
+
+        if (!searchTerm) return true;
+        const q = searchTerm.toLowerCase();
+        return (
+            (item.devoteeName || '').toLowerCase().includes(q) ||
+            (item.guestPhone || '').toLowerCase().includes(q) ||
+            (item.guestName || '').toLowerCase().includes(q) ||
+            (item.seva?.title || '').toLowerCase().includes(q) ||
+            String(item.totalAmount || '').toLowerCase().includes(q) ||
+            (item.place || '').toLowerCase().includes(q) ||
+            (item.pincode || '').toLowerCase().includes(q)
+        );
+    });
+
+
+    // sorting
+    const sortedBookings = [...filteredBookings].sort((a, b) => {
+        const dir = sortDir === 'asc' ? 1 : -1;
+        const getVal = (it, key) => {
+            if (key === 'phone') return (it.guestPhone || it.user?.phone || '').toString();
+            if (key === 'devotee') return (it.devoteeName || '').toString();
+            if (key === 'seva') return (it.sevaName || it.seva?.title || '').toString();
+            if (key === 'amount') return Number(it.totalAmount || 0);
+            if (key === 'bookingDate') return it.bookingDate ? new Date(it.bookingDate) : new Date(0);
+            if (key === 'place') return (it.place || '').toString();
+            if (key === 'pincode') return (it.pincode || '').toString();
+            return (it[ key ] || '').toString();
+        };
+        const va = getVal(a, sortBy);
+        const vb = getVal(b, sortBy);
+        if (va < vb) return -1 * dir;
+        if (va > vb) return 1 * dir;
+        return 0;
+    });
+
+    const totalDonation = sortedBookings.reduce((s, b) => s + (Number(b.totalAmount) || 0), 0);
+    const totalBooked = sortedBookings.length;
+
+    
 
     if (loading) {
         return (
@@ -129,24 +217,42 @@ const SankalpaList = () => {
         <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 font-serif">{t('admin.sankalpa.title')}</h2>
-                    <p className="text-gray-500 mt-1">{t('admin.sankalpa.subtitle')}</p>
+                    <h2 className="text-3xl font-bold text-gray-900 font-serif">Seva List</h2>
+                    <p className="text-gray-500 mt-1">Seva Register</p>
                 </div>
-                <div className="flex space-x-3">
-                    <button
-                        onClick={handleExportPDF}
-                        className="flex items-center px-6 py-2.5 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 shadow-md shadow-orange-200 transition-all active:scale-95"
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        {t('admin.sankalpa.export_pdf')}
-                    </button>
-                </div>
+                    <div className="flex items-center space-x-6">
+                        <div className="text-left">
+                            <div className="text-sm text-gray-500">Total Donation</div>
+                            <div className="text-xl font-bold text-orange-600">₹{totalDonation}</div>
+                        </div>
+                        <div className="text-left">
+                            <div className="text-sm text-gray-500">Total Booked Seva</div>
+                            <div className="text-xl font-bold text-gray-900">{totalBooked}</div>
+                        </div>
+
+                        <div className="ml-6 flex items-center gap-2">
+                            <button
+                                onClick={handleExportPDF}
+                                className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+                            >
+                                <Download className="w-4 h-4 mr-2" />
+                                PDF
+                            </button>
+                            <button
+                                onClick={handleExportCSV}
+                                className="flex items-center px-4 py-2 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 shadow-md shadow-orange-200 transition-all active:scale-95"
+                            >
+                                <Download className="w-4 h-4 mr-2" />
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Search Bar */}
-                <div className="p-6 border-b border-gray-100 bg-gray-50/30">
-                    <div className="relative max-w-lg">
+                {/* Search + Date Range */}
+                <div className="p-6 border-b border-gray-100 bg-gray-50/30 flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="relative max-w-lg w-full md:w-1/3">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400" />
                         </div>
@@ -158,6 +264,14 @@ const SankalpaList = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+
+                    <div className="flex items-center gap-3">
+                        <label className="text-sm text-gray-500">From</label>
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="p-2 border border-gray-200 rounded-lg" />
+                        <label className="text-sm text-gray-500">To</label>
+                        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="p-2 border border-gray-200 rounded-lg" />
+                        <button onClick={() => { setStartDate(''); setEndDate(''); }} className="p-2 border border-gray-200 rounded-lg bg-white">Clear</button>
+                    </div>
                 </div>
 
                 {/* Table */}
@@ -165,43 +279,26 @@ const SankalpaList = () => {
                     <table className="w-full text-left text-sm text-gray-600">
                         <thead className="bg-gray-50 text-gray-400 uppercase font-bold text-[10px] tracking-widest">
                             <tr>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_info')}</th>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_gothram')}</th>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_astrology')}</th>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_seva')}</th>
-                                <th className="px-6 py-5">Contact Info</th>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_date')}</th>
-                                <th className="px-6 py-5">{t('admin.sankalpa.col_status')}</th>
+                                <th onClick={() => { setSortBy('phone'); setSortDir(sortBy === 'phone' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Phone Number</th>
+                                <th onClick={() => { setSortBy('devotee'); setSortDir(sortBy === 'devotee' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Devotee Name</th>
+                                <th onClick={() => { setSortBy('seva'); setSortDir(sortBy === 'seva' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Seva Name</th>
+                                <th onClick={() => { setSortBy('amount'); setSortDir(sortBy === 'amount' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Amount</th>
+                                <th onClick={() => { setSortBy('bookingDate'); setSortDir(sortBy === 'bookingDate' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Booking Date</th>
+                                <th onClick={() => { setSortBy('place'); setSortDir(sortBy === 'place' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Village</th>
+                                <th onClick={() => { setSortBy('pincode'); setSortDir(sortBy === 'pincode' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Pincode</th>
                                 <th className="px-6 py-5 text-right">{t('admin.management.actions', 'Actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filteredBookings.map((item) => (
                                 <tr key={item._id} className="hover:bg-orange-50/30 transition-colors">
+                                    <td className="px-6 py-5 font-mono text-gray-600">{item.guestPhone || item.user?.phone || ''}</td>
                                     <td className="px-6 py-5 font-bold text-gray-900">{item.devoteeName}</td>
-                                    <td className="px-6 py-5 font-medium text-gray-600">{item.gothram}</td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex flex-col">
-                                            <span className="font-semibold text-gray-800">{item.rashi}</span>
-                                            <span className="text-xs text-orange-600 font-medium">{item.nakshatra}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="font-medium text-gray-700">{item.seva?.title}</div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex flex-col text-xs">
-                                            <span className="font-bold text-gray-800">{item.guestName || item.user?.name}</span>
-                                            <span className="text-gray-500">{item.guestEmail || item.user?.email}</span>
-                                            <span className="text-gray-500">{item.guestPhone}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5 font-mono text-gray-500">{new Date(item.bookingDate).toLocaleDateString()}</td>
-                                    <td className="px-6 py-5">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${item.status === 'Completed' || item.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                            {item.status}
-                                        </span>
-                                    </td>
+                                    <td className="px-6 py-5 font-medium text-gray-700">{item.sevaName || item.seva?.titleEn || item.seva?.title}</td>
+                                    <td className="px-6 py-5 font-bold text-orange-600">₹{item.totalAmount || 0}</td>
+                                    <td className="px-6 py-5 font-mono text-gray-500">{item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : ''}</td>
+                                    <td className="px-6 py-5">{item.place || ''}</td>
+                                    <td className="px-6 py-5">{item.pincode || ''}</td>
                                     <td className="px-6 py-5 text-right">
                                         <div className="flex items-center justify-end space-x-2">
                                             <button
@@ -253,6 +350,57 @@ const SankalpaList = () => {
                                     onChange={(e) => setEditFormData({ ...editFormData, devoteeName: e.target.value })}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
                                     required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input
+                                    type="text"
+                                    value={editFormData.guestPhone}
+                                    onChange={(e) => setEditFormData({ ...editFormData, guestPhone: e.target.value })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Seva</label>
+                                <select
+                                    value={editFormData.seva}
+                                    onChange={(e) => setEditFormData({ ...editFormData, seva: e.target.value })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                >
+                                    <option value="">Select Seva</option>
+                                    {sevas.map(s => (
+                                        <option key={s._id} value={s._id}>{s.titleEn} (₹{s.price})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                    <input
+                                        type="number"
+                                        value={editFormData.totalAmount}
+                                        onChange={(e) => setEditFormData({ ...editFormData, totalAmount: e.target.value })}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.pincode}
+                                        onChange={(e) => setEditFormData({ ...editFormData, pincode: e.target.value })}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Village / Place</label>
+                                <input
+                                    type="text"
+                                    value={editFormData.place}
+                                    onChange={(e) => setEditFormData({ ...editFormData, place: e.target.value })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">

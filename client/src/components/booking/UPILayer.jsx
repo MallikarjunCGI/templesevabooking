@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, ShieldCheck, ArrowRight, CreditCard } from 'lucide-react';
 
@@ -12,11 +13,12 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
         return () => document.body.classList.remove('hide-navbar');
     }, [isOpen]);
 
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     // UPI Deep Link Format: upi://pay?pa=VPA&pn=NAME&am=AMOUNT&tn=NOTE&cu=CURRENCY
-    const encodedTempleName = encodeURIComponent(templeName || 'Temple');
-    const encodedSevaName = encodeURIComponent(sevaName || 'Seva Booking');    
+    const encodedTempleName = encodeURIComponent(templeName || t('admin.management.field_temple') || 'Temple');
+    const encodedSevaName = encodeURIComponent(sevaName || t('bookings.receipt_header') || 'Seva Booking');    
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
 
     return (
@@ -34,10 +36,10 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                 <div className="p-5 pt-6 sm:p-8 sm:pt-8 text-center">
                     <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 bg-orange-50 text-orange-600 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest mb-2 sm:mb-3">
                         <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                        UPI Payment
+                        {t('upi.title')}
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-0.5 leading-tight">Scan to Pay</h2>
-                    <p className="text-gray-500 text-[10px] sm:text-xs font-medium italic">Simple & Secure</p>
+                    <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-0.5 leading-tight">{t('upi.scan_to_pay')}</h2>
+                    <p className="text-gray-500 text-[10px] sm:text-xs font-medium italic">{t('upi.simple_secure')}</p>
                 </div>
 
                 {/* QR Code Container - Responsive Size */}
@@ -74,8 +76,8 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                         <div className="flex flex-col items-center bg-blue-50/50 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-blue-100/50 text-center">
                             <ShieldCheck className="w-5 h-5 sm:w-6 sm:size-6 text-blue-600 mb-2" />
                             <div>
-                                <p className="text-[10px] sm:text-sm font-black text-blue-900 uppercase tracking-wide">Scan, Pay & Confirm</p>
-                                <p className="text-[9px] sm:text-xs text-blue-700/80 font-medium leading-tight mt-1">Pay exactly ₹{amount} and click confirm below.</p>
+                                <p className="text-[10px] sm:text-sm font-black text-blue-900 uppercase tracking-wide">{t('upi.scan_pay_confirm')}</p>
+                                <p className="text-[9px] sm:text-xs text-blue-700/80 font-medium leading-tight mt-1">{t('upi.pay_exactly', { amount })}</p>
                             </div>
                         </div>
 
@@ -83,7 +85,7 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                             onClick={onConfirm}
                             className="w-full py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-2xl text-base sm:text-xl font-black flex items-center justify-center hover:bg-orange-600 transition-all shadow-xl active:scale-[0.98] group"
                         >
-                            Confirm Payment
+                            {t('upi.confirm_payment')}
                             <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-4 group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
@@ -93,7 +95,7 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                 <div className="p-3 bg-white text-center">
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center justify-center">
                         <ShieldCheck className="w-3 h-3 mr-1 text-green-500" />
-                        Secure Transaction
+                        {t('upi.secure_transaction')}
                     </p>
                 </div>
             </div>

@@ -2,12 +2,19 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Users, Check, Info } from 'lucide-react';
 
-const PricingWidget = ({ basePrice, count, setCount, total, setTotal }) => {
+const PricingWidget = ({ basePrice, count, setCount, total, setTotal, allowCustomAmount = false }) => {
     const { t } = useTranslation();
 
+    const [price, setPrice] = React.useState(basePrice || 0);
+
     useEffect(() => {
-        setTotal(basePrice * count);
-    }, [basePrice, count, setTotal]);
+        setPrice(basePrice || 0);
+    }, [basePrice]);
+
+    useEffect(() => {
+        const p = Number(price) || 0;
+        setTotal(p * count);
+    }, [price, count, setTotal]);
 
     return (
         <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-orange-100">
@@ -52,6 +59,19 @@ const PricingWidget = ({ basePrice, count, setCount, total, setTotal }) => {
                     </div>
                 </div>
             </div>
+
+            {allowCustomAmount && (
+                <div className="mb-4">
+                    <label className="text-sm text-gray-500 font-bold">Custom Amount (₹)</label>
+                    <input
+                        type="number"
+                        min={0}
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="w-full mt-2 p-3 border border-gray-200 rounded-xl text-lg font-black"
+                    />
+                </div>
+            )}
 
             {/* Total Display */}
             <div className="border-t border-dashed border-gray-200 pt-5 flex justify-between items-end">

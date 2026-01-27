@@ -9,6 +9,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const heroRoutes = require('./routes/heroRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // Load env vars
 dotenv.config();
@@ -20,6 +21,12 @@ console.log(process.env);
 connectDB();
 
 const app = express();
+
+const path = require('path');
+
+// Serve uploaded images from server/public/images
+const imagesDir = path.join(__dirname, 'public', 'images');
+app.use('/images', express.static(imagesDir));
 
 // Middleware
 // app.use(cors({
@@ -60,6 +67,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/hero', heroRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

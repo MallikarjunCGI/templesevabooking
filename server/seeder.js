@@ -153,45 +153,45 @@ const importData = async () => {
 
         // 3. Bookings
         const bookings = [
-            {
-                user: user1._id,
-                seva: createdSevas[0]._id, // Rudra Abhisheka
-                devoteeName: 'Ramesh Kumar',
-                gothram: 'Kashyapa',
-                rashi: 'Simha (Leo)',
-                nakshatra: 'Magha',
-                bookingType: 'individual',
-                count: 1,
-                totalAmount: 350,
-                isPaid: true,
-                status: 'Confirmed'
-            },
-            {
-                user: user1._id,
-                seva: createdSevas[3]._id, // Kalyanotsavam
-                devoteeName: 'Ramesh & Savita',
-                gothram: 'Kashyapa',
-                rashi: 'Simha (Leo)',
-                nakshatra: 'Magha',
-                bookingType: 'family',
-                count: 1,
-                totalAmount: 10000, // 4 * 2500
-                isPaid: true,
-                status: 'Confirmed'
-            },
-            {
-                user: user2._id,
-                seva: createdSevas[5]._id, // Siddhivinayak
-                devoteeName: 'Suresh Raina',
-                gothram: 'Bharadwaja',
-                rashi: 'Kumbha (Aquarius)',
-                nakshatra: 'Shatabhisha',
-                bookingType: 'individual',
-                count: 2,
-                totalAmount: 10002,
-                isPaid: true,
-                status: 'Pending'
-            }
+            // {
+            //     user: user1._id,
+            //     seva: createdSevas[0]._id, // Rudra Abhisheka
+            //     devoteeName: 'Ramesh Kumar',
+            //     gothram: 'Kashyapa',
+            //     rashi: 'Simha (Leo)',
+            //     nakshatra: 'Magha',
+            //     bookingType: 'individual',
+            //     count: 1,
+            //     totalAmount: 350,
+            //     isPaid: true,
+            //     status: 'Confirmed'
+            // },
+            // {
+            //     user: user1._id,
+            //     seva: createdSevas[3]._id, // Kalyanotsavam
+            //     devoteeName: 'Ramesh & Savita',
+            //     gothram: 'Kashyapa',
+            //     rashi: 'Simha (Leo)',
+            //     nakshatra: 'Magha',
+            //     bookingType: 'family',
+            //     count: 1,
+            //     totalAmount: 10000, // 4 * 2500
+            //     isPaid: true,
+            //     status: 'Confirmed'
+            // },
+            // {
+            //     user: user2._id,
+            //     seva: createdSevas[5]._id, // Siddhivinayak
+            //     devoteeName: 'Suresh Raina',
+            //     gothram: 'Bharadwaja',
+            //     rashi: 'Kumbha (Aquarius)',
+            //     nakshatra: 'Shatabhisha',
+            //     bookingType: 'individual',
+            //     count: 2,
+            //     totalAmount: 10002,
+            //     isPaid: true,
+            //     status: 'Pending'
+            // }
         ];
 
         await Booking.insertMany(bookings);
@@ -240,11 +240,11 @@ const importData = async () => {
                 order: 3
             }
         ]);
-        console.log('Hero Slides Imported!');
+        // console.log('Hero Slides Imported!');
 
-        console.log('--- ALL DATA IMPORTED ---');
-        console.log('Admin Login: admin@temple.com / admin123');
-        console.log('User Login: ramesh@example.com / user123');
+        // console.log('--- ALL DATA IMPORTED ---');
+        // console.log('Admin Login: admin@temple.com / admin123');
+        // console.log('User Login: ramesh@example.com / user123');
 
         process.exit();
     } catch (error) {

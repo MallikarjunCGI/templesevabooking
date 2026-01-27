@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, Download, ArrowRight, Home } from 'lucide-react';
+import { CheckCircle, Printer, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { toast } from 'react-hot-toast';
 
 const BookingSuccess = () => {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const [booking, setBooking] = useState(null);
@@ -21,76 +19,56 @@ const BookingSuccess = () => {
         }
     }, [location, navigate]);
 
-    const generatePDF = () => {
+    // Print-only receipt (opens printable window)
+    const printReceipt = () => {
         if (!booking) return;
 
-        try {
-            const doc = new jsPDF();
+        const templeName = booking.seva?.templeNameEn || booking.seva?.templeName || booking.seva?.templeNameKn || '';
+        const sevaName = booking.seva?.titleEn || booking.seva?.title || booking.seva?.titleKn || '';
+        const html = `
+            <html>
+            <head>
+            <title>${t('bookings.receipt_title')}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 24px; color: #222 }
+                    .header { text-align:left; padding:12px 0 }
+                    .title { font-size:18px; font-weight:700; color:#ea580c }
+                    .box { border:1px solid #eee; padding:16px; margin-top:12px }
+                    .row { display:flex; padding:8px 0; border-bottom:1px solid #f3f3f3 }
+                    .label { color:#666; width:40%; text-align:left; padding-right:8px; font-weight:600 }
+                    .value { font-weight:700; text-align:left; width:60% }
+                    .watermark { opacity:0.7; position:fixed; bottom:8px; right:12px; font-size:10px; color:#222 }
+                    @media print { .box { border: none } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="title">${t('bookings.receipt_header')}</div>
+                </div>
+                <div class="box">
+                        <div class="row"><div class="label">${t('bookings.booking_id')}</div><div class="value">#${booking._id ? booking._id.slice(-6).toUpperCase() : 'N/A'}</div></div>
+                        <div class="row"><div class="label">${t('bookings.seva_name')}</div><div class="value">${sevaName}</div></div>
+                        <div class="row"><div class="label">${t('bookings.mobile_number')}</div><div class="value">${booking.guestPhone || ''}</div></div>
+                        <div class="row"><div class="label">${t('bookings.devotee_name')}</div><div class="value">${booking.devoteeName || ''}</div></div>
+                        <div class="row"><div class="label">${t('bookings.date_of_seva')}</div><div class="value">${booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : ''}</div></div>
+                        <div class="row"><div class="label">${t('bookings.amount_paid')}</div><div class="value">₹${booking.totalAmount || 0}</div></div>
+                        <div class="row"><div class="label">${t('bookings.payment_mode')}</div><div class="value">${booking.paymentMode || 'N/A'}</div></div>
+                </div>
+                <div class="watermark">Sri Sai Digital Marketing Agency - 9740261111</div>
+                <script>
+                    window.onload = function() { window.print(); };
+                </script>
+            </body>
+            </html>
+        `;
 
-            console.log("Generating PDF for:", booking);
-
-            // Header - Orange Background
-            doc.setFillColor(234, 88, 12); // Orange-600
-            doc.rect(0, 0, 210, 40, 'F');
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.setFont("helvetica", "bold");
-            doc.text("Temple Seva Booking", 105, 20, null, null, "center");
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.text("Official Receipt", 105, 30, null, null, "center");
-
-            // Temple Details
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            const templeName = booking.seva?.templeNameEn || booking.seva?.templeName || booking.seva?.templeNameKn || 'Temple';
-            doc.text(templeName, 15, 55);
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            const locationStr = booking.seva?.locationEn || booking.seva?.location || booking.seva?.place || booking.seva?.locationKn || 'Temple Location';
-            doc.text(locationStr, 15, 60);
-
-            // Booking Info Table
-            const tableBody = [
-                ['Booking Reference', `#${booking._id ? booking._id.slice(-6).toUpperCase() : 'N/A'}`],
-                ['Seva Name', booking.seva?.titleEn || booking.seva?.title || booking.seva?.titleKn || 'Seva'],
-                ['Devotee Name', booking.devoteeName || 'N/A'],
-                ['Gothram', booking.gothram || 'N/A'],
-                ['Rashi / Nakshatra', `${booking.rashi || '-'} / ${booking.nakshatra || '-'}`],
-                ['Seva Date', booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : 'N/A'],
-                ['Booking Type', (booking.bookingType || 'individual').charAt(0).toUpperCase() + (booking.bookingType || 'individual').slice(1)],
-                ['Amount Paid', `INR ${booking.totalAmount || 0}`],
-                ['Payment Status', 'Paid (Confirmed)']
-            ];
-
-            // Add guest info if present
-            if (booking.guestName) {
-                tableBody.push(['Booked By (Guest)', `${booking.guestName} (${booking.guestPhone || ''})`]);
-            }
-
-            autoTable(doc, {
-                startY: 70,
-                head: [['Description', 'Details']],
-                body: tableBody,
-                theme: 'grid',
-                headStyles: { fillColor: [234, 88, 12] }, // Orange Header
-                styles: { fontSize: 10, cellPadding: 3 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 70 } }
-            });
-
-            // Footer
-            const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 150;
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text("Thank you for your booking. May you be blessed.", 105, finalY + 20, null, null, "center");
-
-            doc.save(`Receipt_${booking._id ? booking._id.slice(-6) : 'booking'}.pdf`);
-            toast.success("Receipt Downloaded");
-        } catch (error) {
-            console.error("PDF Generation Error:", error);
-            toast.error("Failed to generate receipt");
+        const w = window.open('', '_blank');
+        if (w) {
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+        } else {
+            toast.error(t('bookings.print_window_error'));
         }
     };
 
@@ -103,25 +81,24 @@ const BookingSuccess = () => {
                     <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10" />
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2 font-serif">Booking Successful!</h1>
-                <p className="text-gray-500 mb-8 text-sm sm:text-base font-medium opacity-80">
-                    Your seva has been successfully booked. May the blessings be with you.
-                </p>
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2 font-serif">{t('bookings.success_title')}</h1>
+                <p className="text-gray-500 mb-8 text-sm sm:text-base font-medium opacity-80">{t('bookings.success_subtitle')}</p>
 
                 <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 mb-8 text-left border border-gray-100">
-                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">Booking ID</span>
-                        <span className="font-mono font-bold text-gray-900 text-sm sm:text-base">#{booking._id.slice(-6).toUpperCase()}</span>
-                    </div>
-                    <div className="flex justify-between items-start mb-3">
-                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest mt-1">Seva Offering</span>
-                        <span className="font-bold text-gray-900 text-right text-sm sm:text-base max-w-[180px] sm:max-w-none">
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-left">
+                        <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('bookings.booking_id')}</div>
+                        <div className="font-mono font-bold text-gray-900">#{booking._id.slice(-6).toUpperCase()}</div>
+
+                        <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('admin.management.field_temple')}</div>
+                        <div className="font-bold text-gray-900">{booking.seva?.templeNameEn || booking.seva?.templeName || booking.seva?.templeNameKn || 'Sri Kshetra Ramteertha'}</div>
+
+                        <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('admin.sankalpa.col_seva')}</div>
+                        <div className="font-bold text-gray-900">
                             {i18n.language === 'kn' ? (booking.seva?.titleKn || booking.seva?.titleEn || booking.seva?.title) : (booking.seva?.titleEn || booking.seva?.titleKn || booking.seva?.title)}
-                        </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">Amount Paid</span>
-                        <span className="font-black text-orange-600 text-xl sm:text-2xl">₹{booking.totalAmount}</span>
+                        </div>
+
+                        <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">Amount Paid</div>
+                        <div className="font-black text-orange-600 text-lg sm:text-xl">₹{booking.totalAmount}</div>
                     </div>
                 </div>
 
@@ -131,14 +108,14 @@ const BookingSuccess = () => {
                         className="inline-flex items-center justify-center px-6 py-4 bg-white text-gray-700 font-black rounded-xl border border-gray-200 hover:bg-gray-50 transition-all text-sm sm:text-base active:scale-95"
                     >
                         <Home className="w-4 h-4 mr-2" />
-                        Back to Home
+                        {t('common.back_home')}
                     </Link>
                     <button
-                        onClick={generatePDF}
-                        className="inline-flex items-center justify-center px-6 py-4 bg-gray-900 text-white font-black rounded-xl hover:bg-orange-600 transition-all shadow-lg shadow-gray-200 text-sm sm:text-base active:scale-95"
+                        onClick={printReceipt}
+                        className="inline-flex items-center justify-center px-6 py-4 bg-white text-gray-900 font-black rounded-xl border border-gray-200 hover:bg-gray-50 transition-all text-sm sm:text-base active:scale-95"
                     >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Receipt
+                        <Printer className="w-4 h-4 mr-2" />
+                        {t('bookings.print_receipt')}
                     </button>
                 </div>
             </div>

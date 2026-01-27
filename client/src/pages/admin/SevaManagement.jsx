@@ -158,7 +158,7 @@ const SevaManagement = () => {
                     <div key={seva._id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
                         <div className="relative h-48 overflow-hidden">
                             <img
-                                src={seva.image || 'https://images.unsplash.com/photo-1621252179027-94459d278660'}
+                                src={seva.image || '/images/seva-aarti.jpg'}
                                 alt={currentLang === 'kn' ? (seva.titleKn || seva.title) : (seva.titleEn || seva.title)}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
@@ -349,7 +349,7 @@ const SevaManagement = () => {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">{t('admin.management.field_image')}</label>
                                 <input
                                     type="text"
-                                    placeholder="https://images.unsplash.com/..."
+                                    placeholder="/images/main2.png"
                                     required
                                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                                     value={formData.image}

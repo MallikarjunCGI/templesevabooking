@@ -52,10 +52,10 @@ const Bookings = () => {
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
-            doc.text("Temple Seva Booking", 105, 20, null, null, "center");
+            doc.text(t('bookings.pdf_title'), 105, 20, null, null, "center");
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
-            doc.text("Official Receipt", 105, 30, null, null, "center");
+            doc.text(t('bookings.receipt_header'), 105, 30, null, null, "center");
 
             // Temple Details
             doc.setTextColor(0, 0, 0);
@@ -70,15 +70,15 @@ const Bookings = () => {
 
             // Booking Info Table
             const tableBody = [
-                ['Booking Reference', `#${booking._id ? booking._id.slice(-6).toUpperCase() : 'N/A'}`],
-                ['Seva Name', booking.seva?.titleEn || booking.seva?.title || booking.seva?.titleKn || 'Unknown Seva'],
-                ['Devotee Name', booking.devoteeName || 'N/A'],
-                ['Gothram', booking.gothram || 'N/A'],
-                ['Rashi / Nakshatra', `${booking.rashi || '-'} / ${booking.nakshatra || '-'}`],
-                ['Seva Date', booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : 'N/A'],
-                ['Booking Type', (booking.bookingType || 'individual').charAt(0).toUpperCase() + (booking.bookingType || 'individual').slice(1)],
-                ['Amount Paid', `INR ${booking.totalAmount || 0}`],
-                ['Payment Status', 'Paid (Confirmed)']
+                [t('bookings.booking_reference'), `#${booking._id ? booking._id.slice(-6).toUpperCase() : 'N/A'}`],
+                [t('bookings.seva_name'), booking.seva?.titleEn || booking.seva?.title || booking.seva?.titleKn || 'Unknown Seva'],
+                [t('bookings.devotee_name'), booking.devoteeName || 'N/A'],
+                [t('bookings.gothram'), booking.gothram || 'N/A'],
+                [t('bookings.rashi_nakshatra'), `${booking.rashi || '-'} / ${booking.nakshatra || '-'}`],
+                [t('bookings.seva_date'), booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : 'N/A'],
+                [t('bookings.booking_type'), (booking.bookingType || 'individual').charAt(0).toUpperCase() + (booking.bookingType || 'individual').slice(1)],
+                [t('bookings.amount_paid_label'), `INR ${booking.totalAmount || 0}`],
+                [t('bookings.payment_status'), 'Paid (Confirmed)']
             ];
 
             // Add guest info if present - for consistency though mybookings typically implies logged in user
@@ -100,13 +100,13 @@ const Bookings = () => {
             const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 150;
             doc.setFontSize(10);
             doc.setTextColor(100);
-            doc.text("Thank you for your booking. May you be blessed.", 105, finalY + 20, null, null, "center");
+            doc.text(t('bookings.pdf_footer'), 105, finalY + 20, null, null, "center");
 
             doc.save(`Receipt_${booking._id ? booking._id.slice(-6) : 'booking'}.pdf`);
             toast.success(t('bookings.receipt_downloaded'));
         } catch (error) {
             console.error("PDF generation failed:", error);
-            toast.error("Could not generate receipt");
+            toast.error(t('bookings.generate_error'));
         }
     };
 

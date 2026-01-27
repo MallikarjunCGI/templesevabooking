@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Navbar from './components/common/Navbar'
 import Footer from './components/common/Footer'
@@ -24,6 +24,7 @@ const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
 const SankalpaList = lazy(() => import('./pages/admin/SankalpaList'))
 const SevaManagement = lazy(() => import('./pages/admin/SevaManagement'))
 const HeroManagement = lazy(() => import('./pages/admin/HeroManagement'))
+const PhotoOrders = lazy(() => import('./pages/admin/PhotoOrders'))
 const SettingsBoundary = lazy(() => import('./pages/admin/Settings'))
 
 // Loading Component
@@ -48,14 +49,15 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/bookings" element={<Bookings />} />
-                        <Route path="/booking-success" element={<BookingSuccess />} />
+                        <Route path="/booking-success" element={<BookingSuccess />} />                       
                     </Route>
 
                     {/* Admin Routes */}
                     <Route element={<AdminRoute />}>
                         <Route path="/admin" element={<AdminLayout />}>
-                            <Route index element={<Dashboard />} />
+                            <Route index element={<Navigate to="sankalpa" replace />} />
                             <Route path="sankalpa" element={<SankalpaList />} />
+                            <Route path="photo-orders" element={<PhotoOrders />} />
                             <Route path="sevas" element={<SevaManagement />} />
                             <Route path="hero" element={<HeroManagement />} />
                             <Route path="settings" element={<SettingsBoundary />} />
