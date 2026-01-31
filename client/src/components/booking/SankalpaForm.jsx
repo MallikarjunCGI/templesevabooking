@@ -183,6 +183,19 @@ useEffect(() => {
                     </div>
                 </div>
 
+                {/* Gothram (optional) */}
+                <div>
+                    <label className="block text-[10px] font-black text-orange-600/70 uppercase tracking-[0.2em] mb-2">{t('sankalpa.gothram')}</label>
+                    <input
+                        type="text"
+                        name="gothram"
+                        value={formData.gothram ?? ''}
+                        onChange={handleChange}
+                        placeholder={t('sankalpa.gothram')}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none text-sm font-bold bg-white"
+                    />
+                </div>
+
                 {/* ROW 3: State & District */}
                 <div>
                     <label className="block text-[10px] font-black text-orange-600/70 uppercase tracking-[0.2em] mb-2">{t('sankalpa.label_state')}</label>

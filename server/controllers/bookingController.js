@@ -11,6 +11,7 @@ const createBooking = asyncHandler(async (req, res) => {
         sevaId,
         sevaName,
         devoteeName,
+        gothram,
         bookingType,
         count,
         totalAmount,
@@ -33,6 +34,10 @@ const createBooking = asyncHandler(async (req, res) => {
         // Fetch Seva details to allow a readable sevaName snapshot if not provided
         const sevaDetails = await Seva.findById(sevaId);
 
+        // Next sequential receipt number (1, 2, 3, ...)
+        const lastBooking = await Booking.findOne().sort('-receiptNo').select('receiptNo').lean();
+        const receiptNo = (lastBooking && lastBooking.receiptNo != null) ? lastBooking.receiptNo + 1 : 1;
+
         const booking = new Booking({
             user: req.user ? req.user._id : null,
             // Prefer explicit guestPhone from payload; fall back to authenticated user's phone
@@ -41,6 +46,8 @@ const createBooking = asyncHandler(async (req, res) => {
             // Use provided sevaName or snapshot from Seva record
             sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
             devoteeName,
+            gothram: gothram || undefined,
+            receiptNo,
             // Persist location fields
             state,
             district,

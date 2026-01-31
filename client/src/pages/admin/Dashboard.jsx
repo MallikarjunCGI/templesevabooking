@@ -149,7 +149,7 @@ const Dashboard = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {recentBookings.map((booking) => (
                                     <tr key={booking._id} className="hover:bg-orange-50/30 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-xs text-gray-400">#{booking._id.slice(-6).toUpperCase()}</td>
+                                        <td className="px-6 py-4 font-mono text-xs text-gray-400">{booking.receiptNo != null ? booking.receiptNo : '#' + booking._id.slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-gray-900">{booking.devoteeName}</div>
                                             <div className="text-xs text-gray-400">{booking.gothram}</div>

@@ -77,6 +77,9 @@ const bookingSchema = mongoose.Schema(
             required: false,
         },
 
+        // Sequential receipt number (1, 2, 3, ...) for display on receipts
+        receiptNo: { type: Number, required: false },
+
         // --- BOOKING LOGISTICS ---
         bookingDate: { type: Date, default: Date.now },
         bookingType: { 

@@ -70,7 +70,7 @@ const Bookings = () => {
 
             // Booking Info Table
             const tableBody = [
-                [t('bookings.booking_reference'), `#${booking._id ? booking._id.slice(-6).toUpperCase() : 'N/A'}`],
+                [t('bookings.booking_reference'), booking.receiptNo != null ? String(booking.receiptNo) : (booking._id ? '#' + booking._id.slice(-6).toUpperCase() : 'N/A')],
                 [t('bookings.seva_name'), booking.seva?.titleEn || booking.seva?.title || booking.seva?.titleKn || 'Unknown Seva'],
                 [t('bookings.devotee_name'), booking.devoteeName || 'N/A'],
                 [t('bookings.gothram'), booking.gothram || 'N/A'],
@@ -102,7 +102,7 @@ const Bookings = () => {
             doc.setTextColor(100);
             doc.text(t('bookings.pdf_footer'), 105, finalY + 20, null, null, "center");
 
-            doc.save(`Receipt_${booking._id ? booking._id.slice(-6) : 'booking'}.pdf`);
+            doc.save(`Receipt_${booking.receiptNo != null ? booking.receiptNo : (booking._id ? booking._id.slice(-6) : 'booking')}.pdf`);
             toast.success(t('bookings.receipt_downloaded'));
         } catch (error) {
             console.error("PDF generation failed:", error);

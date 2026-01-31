@@ -27,7 +27,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
             doc.text(booking.seva?.templeNameEn || 'Temple', 15, 55);
 
             const tableBody = [
-                ['Reference', `#${booking._id.slice(-6).toUpperCase()}`],
+                ['Reference', booking.receiptNo != null ? String(booking.receiptNo) : `#${booking._id.slice(-6).toUpperCase()}`],
                 ['Seva', booking.seva?.titleEn || 'Seva'],
                 ['Devotee', booking.devoteeName || 'N/A'],
                 ['Date', new Date(booking.bookingDate).toLocaleDateString()],
@@ -43,7 +43,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
                 headStyles: { fillColor: [234, 88, 12] }
             });
 
-            doc.save(`Receipt_${booking._id.slice(-6)}.pdf`);
+            doc.save(`Receipt_${booking.receiptNo != null ? booking.receiptNo : booking._id.slice(-6)}.pdf`);
             toast.success("Receipt Downloaded");
         } catch (error) {
             console.error(error);
@@ -84,7 +84,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
                                         {bookings[0].status}
                                     </div>
                                     <span className="text-[10px] sm:text-xs font-mono font-bold text-gray-300 uppercase tracking-widest">
-                                        #{bookings[0]._id.slice(-6).toUpperCase()}
+                                        {bookings[0].receiptNo != null ? bookings[0].receiptNo : '#' + bookings[0]._id.slice(-6).toUpperCase()}
                                     </span>
                                 </div>
                                 <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2 leading-tight font-serif">

@@ -243,6 +243,7 @@ const allowCustomAmount = (selectedSeva && ((selectedSeva.titleEn || selectedSev
                 // store a human-readable seva snapshot
                 sevaName: selectedSeva?.titleEn || selectedSeva?.title || '',
                 devoteeName: formData.name,
+                gothram: formData.gothram || undefined,
                 bookingType: 'individual',
                 count,
                 totalAmount: total,

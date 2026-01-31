@@ -79,130 +79,80 @@ const printReceipt = () => {
         booking.seva?.title ||
         booking.seva?.titleKn ||
         '';
+    const bookingDateStr = booking.createdAt
+        ? new Date(booking.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString();
+    const sevaDateStr = booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : '';
+    const paidType = (booking.paymentMode === 'upi' ? 'UPI' : booking.paymentMode === 'cash' ? 'Cash' : booking.paymentMode || '—');
 
     const html = `
     <html>
-    <head>        
+    <head>
         <style>
-            @page {
-                size: 7.5in 3.5in;
+            @page { size: A5 landscape; margin: 0; }
+            html, body {
+                width: 8.37in;
+                height: 5.83in;
                 margin: 0;
-            }
-               
-
-html, body {
-    width: 7.5in;
-    height: 3.5in;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-table {
-    page-break-inside: avoid;
-}
-
-.footer {
-    page-break-before: avoid;
-    page-break-after: avoid;
-}
-
-
-            body {
-                margin: 0;
+                padding: 0;
+                overflow: hidden;
                 font-family: Arial, sans-serif;
                 color: #000;
             }
-
-            /* Start below pre-printed header */
             .content {
-                padding: 1.6in 0.3in 0.25in 0.3in;
+                box-sizing: border-box;
+                width: 8.37in;
+                min-height: 5.83in;
+                padding-top: 2.2in;
+                padding-left: 0.4in;
+                padding-right: 0.4in;
+                padding-bottom: 0.3in;
             }
-
-            table {
+            .receipt-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 11px;
+                border: none;
+                font-size: 18px;
             }
-
-            td {
-                border: 1px solid #000;
-                padding: 5px 6px;
+            .receipt-table td {
+                border: none;
+                padding: 6px 10px 6px 0;
                 vertical-align: top;
                 text-align: left;
             }
-
-            .label {
-                width: 42%;
-                font-weight: 600;
-            }
-
-            .value {
-                width: 58%;
-                font-weight: 700;
-            }
-
-            .footer {
-                margin-top: 6px;
-                font-size: 9px;
+            .label { width: 38%; font-weight: bold; font-size: 18px; color: #000; }
+            .value { width: 62%; font-weight: bold; font-size: 18px; }
+            .footer-note {
+                margin-top: 0.2in;
+                font-size: 13px;
+                font-weight: bold;
                 text-align: center;
+                color: #333;
             }
         </style>
     </head>
     <body>
         <div class="content">
-            <table>
-                <tr>
-                    <td class="label">Receipt No</td>
-                    <td class="value">#${booking._id?.slice(-6).toUpperCase()}</td>
-                </tr>
-                <tr>
-                    <td class="label">Seva Name</td>
-                    <td class="value">${sevaName}</td>
-                </tr>
-                <tr>
-                    <td class="label">Devotee Name</td>
-                    <td class="value">${booking.devoteeName || ''}</td>
-                </tr>
-                <tr>
-                    <td class="label">Mobile No</td>
-                    <td class="value">${booking.guestPhone || ''}</td>
-                </tr>
-                <tr>
-                    <td class="label">Seva Date</td>
-                    <td class="value">
-                        ${booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : ''}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Amount Paid</td>
-                    <td class="value">₹ ${booking.totalAmount || 0}</td>
-                </tr>
-                <tr>
-                    <td class="label">Payment Mode</td>
-                    <td class="value">${booking.paymentMode || 'N/A'}</td>
-                </tr>
-                <tr>
-    <td colspan="2" style="
-        text-align:center;
-        font-size:9px;
-        border:1px solid #000;
-    ">
-        Computer Generated Receipt
-    </td>
-</tr>
+            <table class="receipt-table">
+                <tr><td class="label">Receipt No</td><td class="value">${booking.receiptNo != null ? booking.receiptNo : (booking._id ? '#' + booking._id.slice(-6).toUpperCase() : 'N/A')}</td></tr>
+                <tr><td class="label">Booking Date</td><td class="value">${bookingDateStr}</td></tr>
+                <tr><td class="label">Name</td><td class="value">${booking.devoteeName || '—'}</td></tr>
+                <tr><td class="label">Mobile No</td><td class="value">${booking.guestPhone || '—'}</td></tr>
+                <tr><td class="label">Place Name</td><td class="value">${booking.place || '—'}</td></tr>
+                <tr><td class="label">Gothram</td><td class="value">${booking.gothram || '—'}</td></tr>
+                <tr><td class="label">Seva Name</td><td class="value">${sevaName || '—'}</td></tr>
+                <tr><td class="label">Seva Date</td><td class="value">${sevaDateStr || '—'}</td></tr>
+                <tr><td class="label">Amount Paid</td><td class="value">₹ ${booking.totalAmount != null ? booking.totalAmount : 0}</td></tr>
+                <tr><td class="label">Paid Type</td><td class="value">${paidType}</td></tr>
             </table>
-
+            <div class="footer-note">Computer Generated Receipt</div>
         </div>
-
-<script>
-    window.onload = function () {
-        window.print();
-        window.onafterprint = function () {
-            window.close();
-        };
-    };
-</script>
+        <script>
+            window.onload = function () {
+                window.print();
+                window.onafterprint = function () { window.close(); };
+            };
+        </script>
     </body>
     </html>
     `;
@@ -234,7 +184,7 @@ table {
                 <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 mb-8 text-left border border-gray-100">
                     <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-left">
                         <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('bookings.booking_id')}</div>
-                        <div className="font-mono font-bold text-gray-900">#{booking._id.slice(-6).toUpperCase()}</div>
+                        <div className="font-mono font-bold text-gray-900">{booking.receiptNo != null ? booking.receiptNo : '#' + booking._id.slice(-6).toUpperCase()}</div>
 
                         <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('admin.management.field_temple')}</div>
                         <div className="font-bold text-gray-900">{booking.seva?.templeNameEn || booking.seva?.templeName || booking.seva?.templeNameKn || 'Sri Kshetra Ramteertha'}</div>
@@ -243,6 +193,9 @@ table {
                         <div className="font-bold text-gray-900">
                             {i18n.language === 'kn' ? (booking.seva?.titleKn || booking.seva?.titleEn || booking.seva?.title) : (booking.seva?.titleEn || booking.seva?.titleKn || booking.seva?.title)}
                         </div>
+
+                        <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">{t('bookings.gothram')}</div>
+                        <div className="font-bold text-gray-900">{booking.gothram || '—'}</div>
 
                         <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase">Amount Paid</div>
                         <div className="font-black text-orange-600 text-lg sm:text-xl">₹{booking.totalAmount}</div>
