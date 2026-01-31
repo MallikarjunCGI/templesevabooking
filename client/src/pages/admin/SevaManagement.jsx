@@ -61,8 +61,8 @@ const SevaManagement = () => {
             setFormData({
                 titleEn: seva.titleEn || seva.title || '',
                 titleKn: seva.titleKn || '',
-                templeNameEn: seva.templeNameEn || seva.templeName || 'Sri Mahalakshmi Temple',
-                templeNameKn: seva.templeNameKn || 'ಶ್ರೀ ಮಹಾಲಕ್ಷ್ಮಿ ದೇವಸ್ಥಾನ',
+                templeNameEn: seva.templeNameEn || seva.templeName || 'Shree Kshetra Ramteertha',
+                templeNameKn: seva.templeNameKn || 'ಶ್ರೀ ಕ್ಷೇತ್ರ ರಾಮತೀರ್ಥ',
                 locationEn: seva.locationEn || seva.location || 'Karnataka',
                 locationKn: seva.locationKn || 'ಕರ್ನಾಟಕ',
                 descriptionEn: seva.descriptionEn || seva.description || '',
@@ -338,7 +338,7 @@ const SevaManagement = () => {
                                     >
                                         <option value="Pooja">{t('common.pooja', 'Pooja')}</option>
                                         <option value="Seva">{t('common.seva', 'Seva')}</option>
-                                        <option value="Homa">{t('common.homa', 'Homa')}</option>
+                                        <option value="Donations">{t('common.donations', 'Donations')}</option>
                                         <option value="Abhisheka">{t('common.abhisheka', 'Abhisheka')}</option>
                                     </select>
                                 </div>

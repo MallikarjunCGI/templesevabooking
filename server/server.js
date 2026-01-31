@@ -61,6 +61,7 @@ app.get('/api/translate', async (req, res) => {
 });
 
 // Routes
+const devoteeRoutes = require('./routes/devoteeRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/sevas', sevasRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -68,6 +69,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/hero', heroRoutes);
 app.use('/api/uploads', uploadRoutes);
+
+app.use('/api/devotees', devoteeRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

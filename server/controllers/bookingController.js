@@ -31,6 +31,7 @@ const createBooking = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error('No seva items');
     } else {
+        const Devotee = require('../models/Devotee');
         // Fetch Seva details to allow a readable sevaName snapshot if not provided
         const sevaDetails = await Seva.findById(sevaId);
 
@@ -38,17 +39,45 @@ const createBooking = asyncHandler(async (req, res) => {
         const lastBooking = await Booking.findOne().sort('-receiptNo').select('receiptNo').lean();
         const receiptNo = (lastBooking && lastBooking.receiptNo != null) ? lastBooking.receiptNo + 1 : 1;
 
+        // Upsert devotee
+        let devotee = await Devotee.findOne({ mobile: guestPhone });
+        if (devotee) {
+            devotee.fullName = devoteeName;
+            devotee.gothram = gothram || devotee.gothram;
+            devotee.state = state || devotee.state;
+            devotee.district = district || devotee.district;
+            devotee.taluk = taluk || devotee.taluk;
+            devotee.pincode = pincode || devotee.pincode;
+            devotee.place = place || devotee.place;
+            devotee.fullAddress = address || devotee.fullAddress;
+            devotee.totalAmountSpent += Number(totalAmount) || 0;
+            devotee.sevaCount += 1;
+            await devotee.save();
+        } else {
+            devotee = new Devotee({
+                mobile: guestPhone,
+                fullName: devoteeName,
+                gothram,
+                state,
+                district,
+                taluk,
+                pincode,
+                place,
+                fullAddress: address,
+                totalAmountSpent: Number(totalAmount) || 0,
+                sevaCount: 1
+            });
+            await devotee.save();
+        }
+
         const booking = new Booking({
             user: req.user ? req.user._id : null,
-            // Prefer explicit guestPhone from payload; fall back to authenticated user's phone
             guestPhone: guestPhone || (req.user ? req.user.phone : null),
             seva: sevaId,
-            // Use provided sevaName or snapshot from Seva record
             sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
             devoteeName,
             gothram: gothram || undefined,
             receiptNo,
-            // Persist location fields
             state,
             district,
             taluk,

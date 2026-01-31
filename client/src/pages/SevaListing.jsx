@@ -30,7 +30,7 @@ const SevaListing = () => {
         }
     };
 
-    const categories = ["All", "Pooja", "Abhisheka", "Homa", "Special"];
+    const categories = ["All", "Pooja", "Abhisheka", "Donations", "Special"];
 
     const filteredSevas = sevas.filter(seva => {
         const title = (i18n.language === 'kn') ? (seva.titleKn || seva.titleEn || seva.title) : (seva.titleEn || seva.titleKn || seva.title);

@@ -9,7 +9,7 @@ const Settings = () => {
     const { t } = useTranslation();
     const { user } = useSelector((state) => state.auth);
     const [templeInfo, setTempleInfo] = useState({
-        name: 'Sri Mahalakshmi Temple',
+        name: 'Shree Kshetra Ramtirtha',
         email: 'contact@temple.com',
         phone: '+91 80 1234 5678',
         address: 'Karnataka',

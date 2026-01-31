@@ -168,7 +168,16 @@ useEffect(() => {
     }
 }, [selectedSeva]);
 
-const allowCustomAmount = (selectedSeva && ((selectedSeva.titleEn || selectedSeva.title || '').toLowerCase().includes('sarva seva')));
+//const allowCustomAmount = (selectedSeva && ((selectedSeva.titleEn || selectedSeva.title || '').toLowerCase().includes('sarva seva')));
+const title = (selectedSeva?.titleEn || selectedSeva?.title || '').toLowerCase();
+
+const allowCustomAmount =
+  selectedSeva &&
+  (
+    title.includes('sarva seva') ||
+    title.includes('building fund') ||
+    title.includes('donation for anna santarpana')
+  );
 
 
 

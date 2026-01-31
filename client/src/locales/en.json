@@ -86,6 +86,7 @@
         "label_address": "Full Address",
         "label_payment_mode": "Payment Mode",
         "placeholder_10_digit": "10-digit number",
+        "placeholder_6_digit": "6-digit number",
         "placeholder_devotee_name": "Devotee Name",
         "placeholder_village_name": "Village Name",
         "placeholder_address": "House No, Street etc.",
