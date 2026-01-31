@@ -41,8 +41,8 @@ const Footer = () => {
         { name: t('footer.terms_service'), path: "#" }
     ];
 
-    // Only add My Bookings for admins
-    if (isAuthenticated && user?.role === 'admin') {
+    // Add My Bookings for logged-in admin and user roles
+    if (isAuthenticated && (user?.role === 'admin' || user?.role === 'user')) {
         quickLinks.splice(2, 0, { name: t('nav.my_bookings'), path: "/bookings" });
     }
 

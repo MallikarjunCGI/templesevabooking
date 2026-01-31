@@ -103,7 +103,7 @@ const printReceipt = () => {
                 box-sizing: border-box;
                 width: 8.37in;
                 min-height: 5.83in;
-                padding-top: 2.2in;
+                padding-top: 2.3in;
                 padding-left: 0.4in;
                 padding-right: 0.4in;
                 padding-bottom: 0.3in;

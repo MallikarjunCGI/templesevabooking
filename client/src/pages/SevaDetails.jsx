@@ -60,7 +60,17 @@ const SevaDetails = () => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
 
+    // Public (not logged in) must contact trust; only admin/user can book
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/contact-trust', { replace: true });
+            return;
+        }
+    }, [isAuthenticated, navigate]);
+
 useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchAllSevas = async () => {
         try {
             const { data } = await api.get('/sevas');
@@ -106,7 +116,7 @@ useEffect(() => {
     } else {
         setLoading(false);
     }
-}, [id]);
+}, [id, isAuthenticated, navigate, t]);
 
 // Read any prefill data placed in sessionStorage (e.g., from phone lookup)
 useEffect(() => {

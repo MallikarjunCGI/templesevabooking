@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, ArrowRight } from 'lucide-react';
-
+import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 
 const SevaCard = ({ seva }) => {
     const { i18n, t } = useTranslation();
     const navigate = useNavigate();
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const currentLang = i18n.language;
 
     return (
@@ -49,7 +50,13 @@ const SevaCard = ({ seva }) => {
                     </div>
 
                     <button
-                        onClick={() => navigate(`/sevas/${seva._id}`, { state: { selectedSevaId: seva._id } })}
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                navigate('/contact-trust');
+                            } else {
+                                navigate(`/sevas/${seva._id}`, { state: { selectedSevaId: seva._id } });
+                            }
+                        }}
                         className="flex items-center text-orange-600 hover:text-orange-700 font-bold text-sm group/btn cursor-pointer bg-transparent border-none outline-none"
                     >
                         {t('seva_card.book_now')}

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { Save, User, Building2, Shield, Globe, Clock, CreditCard, Image, Plus, Trash2 } from 'lucide-react';
+import { Save, User, Building2, Shield, Globe, Clock, CreditCard, Image, Plus, Trash2, Lock, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 const Settings = () => {
     const { t } = useTranslation();
+    const { user } = useSelector((state) => state.auth);
     const [templeInfo, setTempleInfo] = useState({
         name: 'Sri Mahalakshmi Temple',
         email: 'contact@temple.com',
@@ -23,6 +24,12 @@ const Settings = () => {
         notifyDevotee: true,
         upiId: '',
     });
+
+    const [ownPassword, setOwnPassword] = useState({ current: '', new: '', confirm: '' });
+    const [changingOwn, setChangingOwn] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [userPassword, setUserPassword] = useState({}); // userId -> { new, confirm }
+    const [changingUser, setChangingUser] = useState(null);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -71,6 +78,69 @@ const Settings = () => {
         } catch (error) {
             console.error('Failed to save settings:', error);
             toast.error('Failed to save settings');
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const { data } = await api.get('/auth/users');
+            setUsers(data);
+        } catch (e) {
+            console.error('Failed to fetch users', e);
+            toast.error('Failed to load users');
+        }
+    };
+
+    useEffect(() => {
+        if (user?.role === 'admin') fetchUsers();
+    }, [user?.role]);
+
+    const handleChangeOwnPassword = async (e) => {
+        e.preventDefault();
+        if (ownPassword.new !== ownPassword.confirm) {
+            toast.error(t('admin.settings.password_mismatch', 'New passwords do not match'));
+            return;
+        }
+        if (ownPassword.new.length < 6) {
+            toast.error(t('admin.settings.password_min', 'Password must be at least 6 characters'));
+            return;
+        }
+        setChangingOwn(true);
+        try {
+            await api.put('/auth/change-password', {
+                currentPassword: ownPassword.current,
+                newPassword: ownPassword.new,
+            });
+            toast.success(t('admin.settings.password_updated', 'Password updated successfully'));
+            setOwnPassword({ current: '', new: '', confirm: '' });
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || 'Failed to update password';
+            toast.error(msg);
+        } finally {
+            setChangingOwn(false);
+        }
+    };
+
+    const handleSetUserPassword = async (userId) => {
+        const p = userPassword[userId];
+        if (!p || p.new !== p.confirm) {
+            toast.error(t('admin.settings.password_mismatch', 'Passwords do not match'));
+            return;
+        }
+        if (p.new.length < 6) {
+            toast.error(t('admin.settings.password_min', 'Password must be at least 6 characters'));
+            return;
+        }
+        setChangingUser(userId);
+        try {
+            await api.put(`/auth/users/${userId}/password`, { newPassword: p.new });
+            toast.success(t('admin.settings.password_updated', 'Password updated successfully'));
+            setUserPassword((prev) => ({ ...prev, [userId]: {} }));
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || 'Failed to update password';
+            toast.error(msg);
+        } finally {
+            setChangingUser(null);
         }
     };
 
@@ -224,7 +294,7 @@ const Settings = () => {
                 </div>
             </section>
 
-            {/* Security */}
+            {/* Security – Change password */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-red-50/30">
                     <div className="flex items-center">
@@ -232,13 +302,105 @@ const Settings = () => {
                         <h3 className="font-bold text-gray-800">{t('admin.settings.security_title')}</h3>
                     </div>
                 </div>
-                <div className="p-6">
-                    <button className="px-6 py-3 border border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors">
-                        {t('admin.settings.change_password')}
-                    </button>
-                    <p className="mt-3 text-xs text-gray-400 flex items-center">
-                        {t('admin.settings.account_managed')}
-                    </p>
+                <div className="p-6 space-y-6">
+                    <form onSubmit={handleChangeOwnPassword} className="space-y-4">
+                        <h4 className="text-sm font-bold text-gray-700 flex items-center">
+                            <Lock className="w-4 h-4 mr-2" />
+                            {t('admin.settings.change_own_password', 'Change your password')}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.settings.current_password', 'Current password')}</label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none"
+                                    value={ownPassword.current}
+                                    onChange={(e) => setOwnPassword((p) => ({ ...p, current: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.settings.new_password', 'New password')}</label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none"
+                                    value={ownPassword.new}
+                                    onChange={(e) => setOwnPassword((p) => ({ ...p, new: e.target.value }))}
+                                    minLength={6}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.settings.confirm_password', 'Confirm new password')}</label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none"
+                                    value={ownPassword.confirm}
+                                    onChange={(e) => setOwnPassword((p) => ({ ...p, confirm: e.target.value }))}
+                                    minLength={6}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={changingOwn}
+                            className="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center"
+                        >
+                            {changingOwn && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {t('admin.settings.change_password')}
+                        </button>
+                    </form>
+
+                    {user?.role === 'admin' && users.length > 0 && (
+                        <div className="pt-6 border-t border-gray-100">
+                            <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
+                                <User className="w-4 h-4 mr-2" />
+                                {t('admin.settings.set_user_passwords', 'Set passwords for Admin & User accounts')}
+                            </h4>
+                            <div className="space-y-4">
+                                {users.map((u) => (
+                                    <div key={u._id} className="flex flex-wrap items-end gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                        <div className="min-w-[140px]">
+                                            <p className="text-xs text-gray-500 uppercase font-bold">{u.name}</p>
+                                            <p className="text-sm text-gray-700">{u.email} <span className="text-orange-600 font-bold">({u.role})</span></p>
+                                        </div>
+                                        <div className="flex-1 flex flex-wrap gap-2 items-end">
+                                            <input
+                                                type="password"
+                                                placeholder={t('admin.settings.new_password', 'New password')}
+                                                className="px-3 py-2 rounded-lg border border-gray-200 text-sm w-40"
+                                                value={userPassword[u._id]?.new || ''}
+                                                onChange={(e) => setUserPassword((prev) => ({
+                                                    ...prev,
+                                                    [u._id]: { ...prev[u._id], new: e.target.value }
+                                                }))}
+                                            />
+                                            <input
+                                                type="password"
+                                                placeholder={t('admin.settings.confirm_password', 'Confirm')}
+                                                className="px-3 py-2 rounded-lg border border-gray-200 text-sm w-40"
+                                                value={userPassword[u._id]?.confirm || ''}
+                                                onChange={(e) => setUserPassword((prev) => ({
+                                                    ...prev,
+                                                    [u._id]: { ...prev[u._id], confirm: e.target.value }
+                                                }))}
+                                            />
+                                            <button
+                                                type="button"
+                                                disabled={changingUser === u._id}
+                                                onClick={() => handleSetUserPassword(u._id)}
+                                                className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center"
+                                            >
+                                                {changingUser === u._id && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                                                {t('admin.settings.set_password', 'Set password')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

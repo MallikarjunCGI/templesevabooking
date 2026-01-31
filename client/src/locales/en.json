@@ -32,6 +32,12 @@
         "error_invalid_phone": "Please enter a valid 10-digit mobile number",
         "error_fetch_bookings": "Failed to fetch bookings. Please try again."
     },
+    "contact_trust": {
+        "title": "Seva Booking",
+        "message": "Please contact Temple Trust for any Seva Booking.",
+        "subtext": "Visit the temple office or call the numbers below to book your seva.",
+        "back_to_sevas": "Back to Book Seva"
+    },
     "auth": {
         "login_title": "Welcome Back",
         "login_subtitle": "Experience the divine connection",
@@ -250,7 +256,16 @@
             "allow_same_day_desc": "Permit devotees to book rituals for the current date",
             "notify_devotee": "Email Notifications",
             "notify_devotee_desc": "Send automatic booking confirmations to devotees",
-            "change_password": "Change Admin Password",
+            "change_password": "Change Password",
+            "change_own_password": "Change your password",
+            "current_password": "Current password",
+            "new_password": "New password",
+            "confirm_password": "Confirm new password",
+            "password_mismatch": "New passwords do not match",
+            "password_min": "Password must be at least 6 characters",
+            "password_updated": "Password updated successfully",
+            "set_user_passwords": "Set passwords for Admin & User accounts",
+            "set_password": "Set password",
             "account_managed": "Account managed by Root Administrator"
         },
         "hero": {

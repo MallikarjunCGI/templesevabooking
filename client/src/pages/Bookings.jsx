@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Calendar, MapPin, Clock, Download, ArrowLeft, Loader2 } from 'lucide-react';
@@ -16,29 +17,26 @@ const Bookings = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        // Redirect if not admin - devotee login flow is removed
-        if (!isAuthenticated || user?.role !== 'admin') {
-            navigate('/');
+        if (!isAuthenticated) {
+            navigate('/login');
             return;
         }
 
         const fetchBookings = async () => {
             try {
-                const response = await api.get('/bookings/mybookings');
-                // Ensure data is an array
+                const endpoint = user?.role === 'admin' ? '/bookings' : '/bookings/mybookings';
+                const response = await api.get(endpoint);
                 const bookingsData = Array.isArray(response.data) ? response.data : [];
                 setBookings(bookingsData);
             } catch (error) {
                 console.error("Error fetching bookings:", error);
-                // Don't show toast on 401/404 to avoid spam logic, just log
-                // or keep toast but ensure state is fail-safe
                 setBookings([]);
             } finally {
                 setLoading(false);
             }
         };
         fetchBookings();
-    }, []);
+    }, [isAuthenticated, user?.role, navigate]);
 
     const generatePDF = (booking) => {
         try {

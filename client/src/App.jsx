@@ -16,6 +16,7 @@ const Bookings = lazy(() => import('./pages/Bookings'))
 const SevaListing = lazy(() => import('./pages/SevaListing'))
 const SevaDetails = lazy(() => import('./pages/SevaDetails'))
 const BookingSuccess = lazy(() => import('./pages/BookingSuccess'))
+const ContactTrust = lazy(() => import('./pages/ContactTrust'))
 
 // Admin Lazy Load
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -49,7 +50,8 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/bookings" element={<Bookings />} />
-                        <Route path="/booking-success" element={<BookingSuccess />} />                       
+                        <Route path="/booking-success" element={<BookingSuccess />} />
+                        <Route path="/contact-trust" element={<ContactTrust />} />
                     </Route>
 
                     {/* Admin Routes */}
