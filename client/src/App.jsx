@@ -17,6 +17,7 @@ const SevaListing = lazy(() => import('./pages/SevaListing'))
 const SevaDetails = lazy(() => import('./pages/SevaDetails'))
 const BookingSuccess = lazy(() => import('./pages/BookingSuccess'))
 const ContactTrust = lazy(() => import('./pages/ContactTrust'))
+const PaymentTypeSelect = lazy(() => import('./pages/PaymentTypeSelect'))
 
 // Admin Lazy Load
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -52,6 +53,7 @@ function App() {
                         <Route path="/bookings" element={<Bookings />} />
                         <Route path="/booking-success" element={<BookingSuccess />} />
                         <Route path="/contact-trust" element={<ContactTrust />} />
+                        <Route path="/select-payment" element={<PaymentTypeSelect />} />
                     </Route>
 
                     {/* Admin Routes */}

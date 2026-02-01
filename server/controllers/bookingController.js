@@ -90,7 +90,8 @@ const createBooking = asyncHandler(async (req, res) => {
             count,
             totalAmount,
             isPaid: true, // Mocking payment success for now
-            status: 'Confirmed'
+            status: 'Confirmed',
+            utrNumber: req.body.utrNumber || undefined
         });
 
         const createdBooking = await booking.save();

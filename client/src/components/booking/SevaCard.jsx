@@ -1,14 +1,19 @@
+
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, ArrowRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import React, { useState } from 'react';
 
 const SevaCard = ({ seva }) => {
+
     const { i18n, t } = useTranslation();
     const navigate = useNavigate();
-    const { isAuthenticated } = useSelector((state) => state.auth);
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
     const currentLang = i18n.language;
+    const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState('upi');
 
     return (
         <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full active:scale-[0.98]">
@@ -52,7 +57,13 @@ const SevaCard = ({ seva }) => {
                     <button
                         onClick={() => {
                             if (!isAuthenticated) {
-                                navigate('/contact-trust');
+                                // Pass prefill if available from sessionStorage
+                                let prefill = {};
+                                try {
+                                    const raw = sessionStorage.getItem('prefill_booking');
+                                    if (raw) prefill = JSON.parse(raw);
+                                } catch {}
+                                navigate('/select-payment', { state: { selectedSevaId: seva._id, prefill } });
                             } else {
                                 navigate(`/sevas/${seva._id}`, { state: { selectedSevaId: seva._id } });
                             }

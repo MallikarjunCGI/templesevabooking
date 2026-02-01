@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import api from '../../utils/api';
@@ -13,17 +14,22 @@ const HomeSearchSection = () => {
     const [foundBookings, setFoundBookings] = useState([]);
     const navigate = useNavigate();
     const { t } = useTranslation();
+    // Removed isAuthenticated restriction for mobile search
 
     const handleTrackBooking = async () => {
-        console.log('handleTrackBooking invoked with', trackPhone);
-        if (!trackPhone || trackPhone.length < 10) {
-            toast.error(t('home.error_invalid_phone'));
+        // Only allow 10 digit mobile numbers
+        const phone = (trackPhone || '').replace(/\D/g, '');
+        if (!phone || phone.length !== 10) {
+            toast.error('Please enter a valid 10 digit mobile number');
             return;
         }
+        // Only allow numbers
+        setTrackPhone(phone);
+        console.log('handleTrackBooking invoked with', phone);
 
         setIsTracking(true);
         try {
-            const { data } = await api.get(`/bookings/track/${trackPhone}`);
+            const { data } = await api.get(`/bookings/track/${phone}`);
             if (data && data.length > 0) {
                 // Use bookings list to build a robust prefill: prefer latest non-empty values
                 const latest = data[0];
@@ -34,15 +40,13 @@ const HomeSearchSection = () => {
                     }
                     return undefined;
                 };
-
                 const prefill = {
                     name: findFirstNonEmpty('devoteeName') || findFirstNonEmpty('guestName') || undefined,
-                    gothram: findFirstNonEmpty('gothram'),
                     rashi: findFirstNonEmpty('rashi'),
                     nakshatra: findFirstNonEmpty('nakshatra'),
                     guestName: findFirstNonEmpty('guestName'),
                     guestEmail: findFirstNonEmpty('guestEmail'),
-                    guestPhone: findFirstNonEmpty('guestPhone') || trackPhone,
+                    guestPhone: findFirstNonEmpty('guestPhone') || phone,
                     state: findFirstNonEmpty('state') || 'Karnataka',
                     district: findFirstNonEmpty('district') || 'Belagavi',
                     taluk: findFirstNonEmpty('taluk') || 'Athani',
@@ -73,11 +77,17 @@ const HomeSearchSection = () => {
                 }
 
                 const sevaId = latest.seva?._id || latest.seva;
-                navigate(`/sevas/${sevaId}`, { state: { selectedSevaId: sevaId } });
+                // If logged in, go directly. If not, prompt for payment type
+                const isAuthenticated = !!localStorage.getItem('token');
+                if (isAuthenticated) {
+                    navigate(`/sevas/${sevaId}`, { state: { selectedSevaId: sevaId, paymentType: 'upi' } });
+                } else {
+                    navigate('/select-payment', { state: { selectedSevaId: sevaId, prefill } });
+                }
             } else {
                 // No previous bookings: still navigate to a Seva details page with phone prefilled
                 const prefill = {
-                    guestPhone: trackPhone,
+                    guestPhone: phone,
                     state: 'Karnataka',
                     district: 'Belagavi',
                     taluk: 'Athani',
@@ -96,7 +106,12 @@ const HomeSearchSection = () => {
                     const { data: sevasList } = await api.get('/sevas');
                     if (sevasList && sevasList.length > 0) {
                         const firstId = sevasList[0]._id;
-                        navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId } });
+                        const isAuthenticated = !!localStorage.getItem('token');
+                        if (isAuthenticated) {
+                            navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId, paymentType: 'upi' } });
+                        } else {
+                            navigate('/select-payment', { state: { selectedSevaId: firstId, prefill } });
+                        }
                     } else {
                         navigate('/sevas');
                     }
@@ -128,12 +143,12 @@ const HomeSearchSection = () => {
                 <SearchBar
                     value={trackPhone}
                     onChange={setTrackPhone}
-                    onSearch={(val) => navigate('/sevas', { state: { search: val } })}
+                    onSearch={handleTrackBooking}
                     isTracking={isTracking}
+                    placeholder="Search with Mobile number"
                 />
             </div>
 
-            {/* Booking Lookup Modal */}
             <BookingLookupModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

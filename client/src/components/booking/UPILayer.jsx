@@ -4,6 +4,10 @@ import { QRCodeSVG } from 'qrcode.react';
 import { X, ShieldCheck, ArrowRight, CreditCard } from 'lucide-react';
 
 const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaName }) => {
+    const [showUTR, setShowUTR] = React.useState(false);
+    const [utr, setUTR] = React.useState('');
+    const [utrError, setUTRError] = React.useState('');
+    const isAuthenticated = !!localStorage.getItem('token');
     React.useEffect(() => {
         if (isOpen) {
             document.body.classList.add('hide-navbar');
@@ -81,13 +85,54 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                             </div>
                         </div>
 
-                        <button
-                            onClick={onConfirm}
-                            className="w-full py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-2xl text-base sm:text-xl font-black flex items-center justify-center hover:bg-orange-600 transition-all shadow-xl active:scale-[0.98] group"
-                        >
-                            {t('upi.confirm_payment')}
-                            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        {isAuthenticated ? (
+                            <button
+                                onClick={() => onConfirm()}
+                                className="w-full py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-2xl text-base sm:text-xl font-black flex items-center justify-center hover:bg-orange-600 transition-all shadow-xl active:scale-[0.98] group"
+                            >
+                                {t('upi.confirm_payment')}
+                                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-4 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        ) : (
+                            !showUTR ? (
+                                <button
+                                    onClick={() => setShowUTR(true)}
+                                    className="w-full py-4 sm:py-5 bg-gray-900 text-white rounded-xl sm:rounded-2xl text-base sm:text-xl font-black flex items-center justify-center hover:bg-orange-600 transition-all shadow-xl active:scale-[0.98] group"
+                                >
+                                    {t('upi.confirm_payment')}
+                                    <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-4 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    <input
+                                        type="text"
+                                        value={utr}
+                                        onChange={e => {
+                                            setUTR(e.target.value.replace(/\D/g, ''));
+                                            setUTRError('');
+                                        }}
+                                        placeholder="Enter UTR Number"
+                                        maxLength={16}
+                                        minLength={12}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none text-sm font-bold bg-white"
+                                    />
+                                    {utrError && <p className="text-xs text-red-600">{utrError}</p>}
+                                    <button
+                                        onClick={() => {
+                                            if (!utr || utr.length < 12 || utr.length > 16) {
+                                                setUTRError('UTR must be 12-16 digits');
+                                                return;
+                                            }
+                                            setUTRError('');
+                                            onConfirm(utr);
+                                        }}
+                                        className="w-full py-3 bg-orange-600 text-white rounded-xl font-bold mt-1"
+                                    >
+                                        Confirm & Book
+                                    </button>
+                                </div>
+                            )
+                        )}
                     </div>
                 </div>
 

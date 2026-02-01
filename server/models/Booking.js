@@ -67,6 +67,11 @@ const bookingSchema = mongoose.Schema(
             default: false,
         },
         
+        // UTR for UPI payments (public users)
+        utrNumber: {
+            type: String,
+            required: false,
+        },
         // Razorpay Integration Fields (Used if paymentMode is 'upi')
         razorpayOrderId: {
             type: String,

@@ -60,24 +60,25 @@ const SevaDetails = () => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
 
-    // Public (not logged in) must contact trust; only admin/user can book
+
+    // Public (not logged in) can only access if paymentType is 'upi' in location.state
     useEffect(() => {
         if (!isAuthenticated) {
-            navigate('/contact-trust', { replace: true });
-            return;
+            if (location.state?.paymentType !== 'upi') {
+                navigate('/contact-trust', { replace: true });
+            }
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, navigate, location.state]);
 
 useEffect(() => {
-    if (!isAuthenticated) return;
-
+    // Always fetch for both public and logged in
     const fetchAllSevas = async () => {
         try {
             const { data } = await api.get('/sevas');
             setAllSevas(data);
         } catch (error) {
             console.error('Failed to fetch sevas', error);
-                toast.error(t('sankalpa.failed_load_sevas'));
+            toast.error(t('sankalpa.failed_load_sevas'));
         }
     };
 
@@ -85,14 +86,12 @@ useEffect(() => {
         try {
             const { data } = await api.get(`/sevas/${id}`);
             setSeva(data);
-
-            // Preselect seva
             setFormData(prev => ({
                 ...prev,
                 sevaId: data._id
             }));
         } catch (error) {
-                toast.error(t('sankalpa.failed_load_seva'));
+            toast.error(t('sankalpa.failed_load_seva'));
             navigate('/sevas');
         } finally {
             setLoading(false);
@@ -251,15 +250,16 @@ const allowCustomAmount =
             return;
         }
 
+        // Always show UPI layer for all users except cash
         setShowUPI(true);
     };
 
-    const confirmBooking = async () => {
+    // Accept UTR for public users
+    const confirmBooking = async (utrNumber) => {
         setIsBooking(true);
         try {
             const payload = {
                 sevaId: formData.sevaId,
-                // store a human-readable seva snapshot
                 sevaName: selectedSeva?.titleEn || selectedSeva?.title || '',
                 devoteeName: formData.name,
                 gothram: formData.gothram || undefined,
@@ -268,7 +268,6 @@ const allowCustomAmount =
                 totalAmount: total,
                 guestPhone: formData.guestPhone,
                 bookingDate: selectedDate,
-                // Location fields
                 state: formData.state,
                 district: formData.district,
                 taluk: formData.taluk,
@@ -277,15 +276,26 @@ const allowCustomAmount =
                 address: formData.address,
                 paymentMode: formData.paymentMode
             };
-
+            // Only for public (not logged in) users, require UTR
+            if (!isAuthenticated && !utrNumber) {
+                toast.error('UTR is required for public users');
+                setIsBooking(false);
+                return;
+            }
+            if (!isAuthenticated && utrNumber) {
+                if (utrNumber.length < 12 || utrNumber.length > 16) {
+                    toast.error('UTR must be 12-16 digits');
+                    setIsBooking(false);
+                    return;
+                }
+                payload.utrNumber = utrNumber;
+            }
             const { data } = await api.post('/bookings', payload);
             toast.success(t('bookings.success_title'));
-
             navigate('/booking-success', {
                 state: {
                     booking: {
                         ...data,
-                        // include the currently selected seva object so the receipt shows correct seva details
                         seva: selectedSeva
                     }
                 }
