@@ -66,7 +66,7 @@ const Navbar = () => {
                             >
                                 {t('nav.book_seva')}
                             </Link>
-                                {!isAuthenticated && (
+                                {/* {!isAuthenticated && (
                                     <Link
                                         to="/login"
                                         className={`px-3 xl:px-4 py-2 rounded-full text-xs xl:text-sm font-bold transition-all ${location.pathname === '/login'
@@ -76,7 +76,7 @@ const Navbar = () => {
                                     >
                                         Login
                                     </Link>
-                                )}
+                                )} */}
 
                             {isAuthenticated && user?.role === 'admin' && (
                                 <Link
