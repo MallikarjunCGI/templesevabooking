@@ -25,6 +25,9 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
     const encodedSevaName = encodeURIComponent(sevaName || t('bookings.receipt_header') || 'Seva Booking');    
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
 
+    // Only for public (not logged in) users
+    const showUPILink = !isAuthenticated;
+
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-white rounded-[2rem] w-full max-w-[340px] sm:max-w-[400px] overflow-hidden shadow-2xl border border-orange-100 flex flex-col animate-in zoom-in-95 duration-300 relative">
@@ -67,6 +70,20 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                             />
                         </div>
                     </div>
+
+                    {/* UPI Payment Link for public users */}
+                    {showUPILink && (
+                        <div className="mt-4 text-center">
+                            <a
+                                href={upiLink}
+                                className="inline-block px-4 py-2 mt-2 bg-orange-100 text-orange-700 font-bold rounded-lg border border-orange-200 hover:bg-orange-200 transition-all text-sm"
+                                style={{ wordBreak: 'break-all' }}
+                            >
+                                {t('upi.pay_with_app', 'Pay with UPI App (PhonePe, GPay, etc.)')}
+                            </a>
+                            <div className="text-[10px] text-gray-400 mt-1">{upiLink}</div>
+                        </div>
+                    )}
 
                     <div className="mt-4 sm:mt-6 text-center space-y-0.5 sm:space-y-1">
                         <p className="text-2xl sm:text-3xl font-black text-orange-600">₹{amount}</p>

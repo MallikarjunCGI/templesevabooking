@@ -34,8 +34,8 @@
     },
     "contact_trust": {
         "title": "Seva Booking",
-        "message": "Please contact Temple Trust for any Seva Booking.",
-        "subtext": "Visit the temple office or call the numbers below to book your seva.",
+        "message": "Please contact Temple Booking counter for any Seva Booking through Cash.",
+        "subtext": "Visit the temple office or call the 9019664308 to book your seva.",
         "back_to_sevas": "Back to Book Seva"
     },
     "auth": {

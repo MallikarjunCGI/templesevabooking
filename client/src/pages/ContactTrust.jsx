@@ -16,10 +16,10 @@ const ContactTrust = () => {
                     {t('contact_trust.title', 'Seva Booking')}
                 </h1>
                 <p className="text-gray-700 text-lg font-medium leading-relaxed mb-6">
-                    {t('contact_trust.message', 'Please contact Temple Trust for any Seva Booking.')}
+                    {t('contact_trust.message', 'Please contact Temple Booking counter for any Seva Booking through Cash.')}
                 </p>
                 <p className="text-sm text-gray-500 mb-8">
-                    {t('contact_trust.subtext', 'Visit the temple office or call the numbers below to book your seva.')}
+                    {t('contact_trust.subtext', 'Visit the temple office or call the 9019664308 to book your seva.')}
                 </p>
                 <Link
                     to="/sevas"
