@@ -112,7 +112,7 @@ const printReceipt = () => {
                 width: 100%;
                 border-collapse: collapse;
                 border: none;
-                font-size: 18px;
+                font-size: 10px;
             }
             .receipt-table td {
                 border: none;
@@ -120,8 +120,8 @@ const printReceipt = () => {
                 vertical-align: top;
                 text-align: left;
             }
-            .label { width: 38%; font-weight: bold; font-size: 18px; color: #000; }
-            .value { width: 62%; font-weight: bold; font-size: 18px; }
+            .label { width: 38%; font-weight: bold; font-size: 15px; color: #000; }
+            .value { width: 62%; font-weight: bold; font-size: 15px; }
             .footer-note {
                 margin-top: 0.2in;
                 font-size: 13px;

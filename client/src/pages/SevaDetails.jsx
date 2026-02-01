@@ -278,7 +278,7 @@ const allowCustomAmount =
             };
             // Only for public (not logged in) users, require UTR
             if (!isAuthenticated && !utrNumber) {
-                toast.error('UTR is required for public users');
+                toast.error('Cash Payment is allowed only through Temple Booking Counter.');
                 setIsBooking(false);
                 return;
             }
