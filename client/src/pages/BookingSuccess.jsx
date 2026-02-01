@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, Printer, Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
+import html2pdf from 'html2pdf.js';
 
 const BookingSuccess = () => {
     const { t, i18n } = useTranslation();
@@ -71,9 +72,12 @@ const BookingSuccess = () => {
     //         toast.error(t('bookings.print_window_error'));
     //     }
     // };
+
+// Print Receipt (opens print dialog)
 const printReceipt = () => {
     if (!booking) return;
-
+    // ...existing code for html...
+    // (Use the same html as before)
     const sevaName =
         booking.seva?.titleEn ||
         booking.seva?.title ||
@@ -84,7 +88,6 @@ const printReceipt = () => {
         : new Date().toLocaleDateString();
     const sevaDateStr = booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : '';
     const paidType = (booking.paymentMode === 'upi' ? 'UPI' : booking.paymentMode === 'cash' ? 'Cash' : booking.paymentMode || '—');
-
     const html = `
     <html>
     <head>
@@ -99,6 +102,10 @@ const printReceipt = () => {
                 font-family: Arial, sans-serif;
                 color: #000;
             }
+            body {
+                background: url('/images/Temple_Reciept.jpg') no-repeat center center;
+                background-size: cover;
+            }
             .content {
                 box-sizing: border-box;
                 width: 8.37in;
@@ -112,7 +119,7 @@ const printReceipt = () => {
                 width: 100%;
                 border-collapse: collapse;
                 border: none;
-                font-size: 10px;
+                font-size: 15px;
             }
             .receipt-table td {
                 border: none;
@@ -124,7 +131,7 @@ const printReceipt = () => {
             .value { width: 62%; font-weight: bold; font-size: 15px; }
             .footer-note {
                 margin-top: 0.2in;
-                font-size: 13px;
+                font-size: 10px;
                 font-weight: bold;
                 text-align: center;
                 color: #333;
@@ -156,7 +163,6 @@ const printReceipt = () => {
     </body>
     </html>
     `;
-
     const w = window.open('', '_blank');
     if (w) {
         w.document.open();
@@ -164,6 +170,105 @@ const printReceipt = () => {
         w.document.close();
     }
 };
+
+// Download Receipt as PDF (no print dialog)
+const downloadReceipt = () => {
+    if (!booking) return;
+
+    const sevaName =
+        booking.seva?.titleEn ||
+        booking.seva?.title ||
+        booking.seva?.titleKn ||
+        '';
+
+    const bookingDateStr = booking.createdAt
+        ? new Date(booking.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString();
+
+    const sevaDateStr = booking.bookingDate
+        ? new Date(booking.bookingDate).toLocaleDateString()
+        : '—';
+
+    const paidType =
+        booking.paymentMode === 'upi'
+            ? 'UPI'
+            : booking.paymentMode === 'cash'
+            ? 'Cash'
+            : booking.paymentMode || '—';
+
+    // IMPORTANT: absolute image URL for html2canvas
+    const bgImage = `${window.location.origin}/images/Temple_Reciept.jpg`;
+
+    const element = document.createElement('div');
+    element.innerHTML = `
+        <div style="
+            width: 8.37in;
+            height: 5.83in;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('${bgImage}') no-repeat center center;
+            background-size: cover;
+        ">
+            <div style="
+                box-sizing: border-box;
+                width: 100%;
+                height: 100%;
+                padding-top: 2.3in;
+                padding-left: 0.4in;
+                padding-right: 0.4in;
+                padding-bottom: 0.3in;
+            ">
+                <table style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 15px;
+                ">
+                    <tr><td style="width:38%; font-weight:bold;">Receipt No</td><td style="width:62%; font-weight:bold;">${booking.receiptNo ?? '#' + booking._id.slice(-6).toUpperCase()}</td></tr>
+                    <tr><td style="font-weight:bold;">Booking Date</td><td style="font-weight:bold;">${bookingDateStr}</td></tr>
+                    <tr><td style="font-weight:bold;">Name</td><td style="font-weight:bold;">${booking.devoteeName || '—'}</td></tr>
+                    <tr><td style="font-weight:bold;">Mobile No</td><td style="font-weight:bold;">${booking.guestPhone || '—'}</td></tr>
+                    <tr><td style="font-weight:bold;">Place Name</td><td style="font-weight:bold;">${booking.place || '—'}</td></tr>
+                    <tr><td style="font-weight:bold;">Gothram</td><td style="font-weight:bold;">${booking.gothram || '—'}</td></tr>
+                    <tr><td style="font-weight:bold;">Seva Name</td><td style="font-weight:bold;">${sevaName}</td></tr>
+                    <tr><td style="font-weight:bold;">Seva Date</td><td style="font-weight:bold;">${sevaDateStr}</td></tr>
+                    <tr><td style="font-weight:bold;">Amount Paid</td><td style="font-weight:bold;">₹ ${booking.totalAmount ?? 0}</td></tr>
+                    <tr><td style="font-weight:bold;">Paid Type</td><td style="font-weight:bold;">${paidType}</td></tr>
+                </table>
+
+                <div style="
+                    margin-top: 0.2in;
+                    text-align: center;
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #333;
+                ">
+                    Computer Generated Receipt
+                </div>
+            </div>
+        </div>
+    `;
+
+    html2pdf()
+        .set({
+            margin: 0,
+            filename: `Receipt_${booking.receiptNo || booking._id}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null
+            },
+            jsPDF: {
+                unit: 'in',
+                format: 'a5',
+                orientation: 'landscape'
+            }
+        })
+        .from(element)
+        .save();
+};
+
 
 
 
@@ -216,6 +321,12 @@ const printReceipt = () => {
                     >
                         <Printer className="w-4 h-4 mr-2" />
                         {t('bookings.print_receipt')}
+                    </button>
+                    <button
+                        onClick={downloadReceipt}
+                        className="inline-flex items-center justify-center px-6 py-4 bg-white text-gray-900 font-black rounded-xl border border-gray-200 hover:bg-gray-50 transition-all text-sm sm:text-base active:scale-95"                    >
+                        
+                        Download Receipt
                     </button>
                 </div>
             </div>
