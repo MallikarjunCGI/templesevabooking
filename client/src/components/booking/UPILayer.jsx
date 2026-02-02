@@ -23,7 +23,12 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
     // UPI Deep Link Format: upi://pay?pa=VPA&pn=NAME&am=AMOUNT&tn=NOTE&cu=CURRENCY
     const encodedTempleName = encodeURIComponent(templeName || t('admin.management.field_temple') || 'Temple');
     const encodedSevaName = encodeURIComponent(sevaName || t('bookings.receipt_header') || 'Seva Booking');    
-    const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
+    //const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
+const transactionRef = `TXN${Date.now()}`;
+const orderId = `ORD${Date.now()}`;
+
+const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR&tr=${transactionRef}&tid=${orderId}&mc=0000`;
+
 
     // Only for public (not logged in) users
     const showUPILink = !isAuthenticated;
