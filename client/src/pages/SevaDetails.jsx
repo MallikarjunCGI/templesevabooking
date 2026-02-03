@@ -57,7 +57,6 @@ const SevaDetails = () => {
     const [showUPI, setShowUPI] = useState(false);
     const [isBooking, setIsBooking] = useState(false);
     const [razorpayOrder, setRazorpayOrder] = useState(null);
-    const [razorpayPaymentLink, setRazorpayPaymentLink] = useState(null);
 
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -253,25 +252,20 @@ const allowCustomAmount =
         }
 
         // Always show UPI layer for all users except cash
-        // Create Razorpay Payment Link for UPI payment (branded QR)
+        // Create Razorpay order for UPI payment
         try {
-            const { data } = await api.post('/razorpay/create-payment-link', {
+            const { data } = await api.post('/razorpay/create-order', {
                 amount: total,
-                description: `Seva Payment for ${selectedSeva?.titleEn || selectedSeva?.title || ''}`,
-                customer: {
-                    name: formData.name,
-                    contact: formData.guestPhone,
-                    email: formData.guestEmail
-                }
+                receipt: `seva_${formData.sevaId}_${Date.now()}`
             });
-            if (data.success && data.paymentLink) {
-                setRazorpayPaymentLink(data.paymentLink);
+            if (data.success && data.order) {
+                setRazorpayOrder(data.order);
             } else {
-                toast.error('Failed to create payment link');
+                toast.error('Failed to create payment order');
                 return;
             }
         } catch (err) {
-            toast.error('Failed to create payment link');
+            toast.error('Failed to create payment order');
             return;
         }
         setShowUPI(true);
@@ -415,7 +409,6 @@ const allowCustomAmount =
                 templeName={seva.templeNameEn}
                 sevaName={seva.titleEn}
                 razorpayOrder={razorpayOrder}
-                razorpayPaymentLink={razorpayPaymentLink}
             />
 
             {isBooking && (
