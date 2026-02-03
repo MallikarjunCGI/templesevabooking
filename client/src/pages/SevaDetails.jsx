@@ -56,6 +56,8 @@ const SevaDetails = () => {
 
     const [showUPI, setShowUPI] = useState(false);
     const [isBooking, setIsBooking] = useState(false);
+    const [razorpayOrder, setRazorpayOrder] = useState(null);
+    const [razorpayPaymentLink, setRazorpayPaymentLink] = useState(null);
 
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -188,7 +190,7 @@ const allowCustomAmount =
         }
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         const errs = {};
         const messages = [];
 
@@ -251,6 +253,27 @@ const allowCustomAmount =
         }
 
         // Always show UPI layer for all users except cash
+        // Create Razorpay Payment Link for UPI payment (branded QR)
+        try {
+            const { data } = await api.post('/razorpay/create-payment-link', {
+                amount: total,
+                description: `Seva Payment for ${selectedSeva?.titleEn || selectedSeva?.title || ''}`,
+                customer: {
+                    name: formData.name,
+                    contact: formData.guestPhone,
+                    email: formData.guestEmail
+                }
+            });
+            if (data.success && data.paymentLink) {
+                setRazorpayPaymentLink(data.paymentLink);
+            } else {
+                toast.error('Failed to create payment link');
+                return;
+            }
+        } catch (err) {
+            toast.error('Failed to create payment link');
+            return;
+        }
         setShowUPI(true);
     };
 
@@ -391,6 +414,8 @@ const allowCustomAmount =
                 upiId={settings?.upiId}
                 templeName={seva.templeNameEn}
                 sevaName={seva.titleEn}
+                razorpayOrder={razorpayOrder}
+                razorpayPaymentLink={razorpayPaymentLink}
             />
 
             {isBooking && (
