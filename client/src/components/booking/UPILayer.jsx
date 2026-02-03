@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, ShieldCheck, ArrowRight, CreditCard } from 'lucide-react';
 
-const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaName, razorpayOrder }) => {
+const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaName }) => {
     const [showUTR, setShowUTR] = React.useState(false);
     const [utr, setUTR] = React.useState('');
     const [utrError, setUTRError] = React.useState('');
@@ -20,23 +20,18 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
     const { t } = useTranslation();
     if (!isOpen) return null;
 
-
-    // Always use UPI Deep Link for QR and link
+    // UPI Deep Link Format: upi://pay?pa=VPA&pn=NAME&am=AMOUNT&tn=NOTE&cu=CURRENCY
     const encodedTempleName = encodeURIComponent(templeName || t('admin.management.field_temple') || 'Temple');
-    const encodedSevaName = encodeURIComponent(sevaName || t('bookings.receipt_header') || 'Seva Booking');
-    const orderId = razorpayOrder?.id || `ORD${Date.now()}`;
-    const transactionRef = orderId;
-    const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR&tr=${transactionRef}`;
+    const encodedSevaName = encodeURIComponent(sevaName || t('bookings.receipt_header') || 'Seva Booking');    
+    //const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR`;
+const transactionRef = `TXN${Date.now()}`;
+const orderId = `ORD${Date.now()}`;
+
+const upiLink = `upi://pay?pa=${upiId}&pn=${encodedTempleName}&am=${amount}&tn=${encodedSevaName}&cu=INR&tr=${transactionRef}&tid=${orderId}&mc=0000`;
 
 
     // Only for public (not logged in) users
     const showUPILink = !isAuthenticated;
-
-    // Helper for mobile UPI intent
-    const handleUPIPayClick = (e) => {
-        // Open UPI link in a new tab/window for best mobile compatibility
-        window.open(upiLink, '_blank');
-    };
 
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
@@ -63,36 +58,34 @@ const UPILayer = ({ isOpen, onClose, onConfirm, amount, upiId, templeName, sevaN
                 <div className="px-5 pb-4 sm:px-10 sm:pb-6 flex flex-col items-center">
                     <div className="p-3 sm:p-6 bg-white rounded-3xl sm:rounded-[2.5rem] shadow-inner border-2 border-orange-50 relative group">
                         <div className="absolute inset-0 bg-orange-600/5 rounded-3xl scale-110 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <>
-                            <div className="hidden sm:block">
-                                <QRCodeSVG
-                                    value={upiLink}
-                                    size={180}
-                                    level="H"
-                                    includeMargin={false}
-                                />
-                            </div>
-                            <div className="block sm:hidden">
-                                <QRCodeSVG
-                                    value={upiLink}
-                                    size={120}
-                                    level="H"
-                                    includeMargin={false}
-                                />
-                            </div>
-                        </>
+                        <div className="hidden sm:block">
+                            <QRCodeSVG
+                                value={upiLink}
+                                size={180}
+                                level="H"
+                                includeMargin={false}
+                            />
+                        </div>
+                        <div className="block sm:hidden">
+                            <QRCodeSVG
+                                value={upiLink}
+                                size={120}
+                                level="H"
+                                includeMargin={false}
+                            />
+                        </div>
                     </div>
 
                     {/* UPI Payment Link for public users */}
                     {showUPILink && (
                         <div className="mt-4 text-center">
-                            <button
-                                onClick={handleUPIPayClick}
+                            <a
+                                href={upiLink}
                                 className="inline-block px-4 py-2 mt-2 bg-orange-100 text-orange-700 font-bold rounded-lg border border-orange-200 hover:bg-orange-200 transition-all text-sm"
                                 style={{ wordBreak: 'break-all' }}
                             >
                                 {t('upi.pay_with_app', 'Pay with UPI App (PhonePe, GPay, etc.)')}
-                            </button>
+                            </a>
                             <div className="text-[10px] text-gray-400 mt-1">{upiLink}</div>
                         </div>
                     )}

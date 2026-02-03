@@ -56,7 +56,6 @@ const SevaDetails = () => {
 
     const [showUPI, setShowUPI] = useState(false);
     const [isBooking, setIsBooking] = useState(false);
-    const [razorpayOrder, setRazorpayOrder] = useState(null);
 
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -189,7 +188,7 @@ const allowCustomAmount =
         }
     };
 
-    const handlePayment = async () => {
+    const handlePayment = () => {
         const errs = {};
         const messages = [];
 
@@ -252,22 +251,6 @@ const allowCustomAmount =
         }
 
         // Always show UPI layer for all users except cash
-        // Create Razorpay order for UPI payment
-        try {
-            const { data } = await api.post('/razorpay/create-order', {
-                amount: total,
-                receipt: `seva_${formData.sevaId}_${Date.now()}`
-            });
-            if (data.success && data.order) {
-                setRazorpayOrder(data.order);
-            } else {
-                toast.error('Failed to create payment order');
-                return;
-            }
-        } catch (err) {
-            toast.error('Failed to create payment order');
-            return;
-        }
         setShowUPI(true);
     };
 
@@ -408,7 +391,6 @@ const allowCustomAmount =
                 upiId={settings?.upiId}
                 templeName={seva.templeNameEn}
                 sevaName={seva.titleEn}
-                razorpayOrder={razorpayOrder}
             />
 
             {isBooking && (

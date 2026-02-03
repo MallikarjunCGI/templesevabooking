@@ -66,6 +66,10 @@ exports.createRazorpayOrder = async (req, res) => {
     res.json({ success: true, order });
   } catch (error) {
     console.error('Razorpay order creation error:', error);
+    if (error.response) {
+      console.error('Razorpay error response:', error.response.data);
+    }
+    console.error('Error stack:', error.stack);
     res.status(500).json({ success: false, message: error.message, stack: error.stack });
   }
 };

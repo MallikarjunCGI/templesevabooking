@@ -1,5 +1,4 @@
 require('dotenv').config();
-// ...existing code...
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -21,11 +20,8 @@ console.log(process.env);
 // Connect to database
 connectDB();
 
-
 const app = express();
-app.use(express.json());
-const razorpayRoutes = require('./routes/razorpayRoutes');
-app.use('/api/razorpay', razorpayRoutes);
+
 const path = require('path');
 
 // Serve uploaded images from server/public/images
@@ -42,6 +38,7 @@ app.use(cors({
     origin: true, // This reflects the request origin, allowing any URL
     credentials: true
 }));
+app.use(express.json());
 
 app.get('/api/translate', async (req, res) => {
     const { text, from = 'en', to = 'kn' } = req.query;
