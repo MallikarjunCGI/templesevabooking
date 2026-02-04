@@ -14,7 +14,7 @@ const HomeSearchSection = () => {
     const [foundBookings, setFoundBookings] = useState([]);
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    // Removed isAuthenticated restriction for mobile search
 
     const handleTrackBooking = async () => {
         // Only allow 10 digit mobile numbers
@@ -25,66 +25,60 @@ const HomeSearchSection = () => {
         }
         setTrackPhone(phone);
         setIsTracking(true);
-        let devotee = null;
         try {
-            // Try to fetch devotee details
-            const response = await api.get(`/devotees/${phone}`);
-            devotee = response.data;
-        } catch (error) {
-            // If 404, treat as not found, but proceed
-            if (error.response?.status !== 404) {
-                toast.error(t('home.error_fetch_bookings'));
-                setIsTracking(false);
-                return;
-            }
-        }
-        // Prefill if devotee found
-        let prefill = {};
-        if (devotee) {
-            prefill = {
-                fullName: devotee.fullName || undefined,
-                gothram: devotee.gothram,
-                rashi: devotee.rashi,
-                nakshatra: devotee.nakshatra,
-                guestEmail: devotee.guestEmail,
-                guestPhone: devotee.mobile || devotee.guestPhone || phone,
-                state: devotee.state || 'Karnataka',
-                district: devotee.district || 'Belagavi',
-                taluk: devotee.taluk || 'Athani',
-                place: devotee.place, // Village/Town
-                pincode: devotee.pincode,
-                address: devotee.fullAddress || devotee.address, // Prefer fullAddress if present
-                paymentMode: devotee.paymentMode || 'upi'
-            };
-        } else {
-            // If not found, at least prefill phone
-            prefill = { guestPhone: phone };
-        }
-        try {
-            sessionStorage.setItem('prefill_booking', JSON.stringify(prefill));
-        } catch (e) {
-            console.warn('Could not store prefill in sessionStorage', e);
-        }
-        // Try to fetch sevas and navigate accordingly
-        try {
-            const { data: sevasList } = await api.get('/sevas');
-            if (sevasList && sevasList.length > 0) {
-                const firstId = sevasList[0]._id;
-                if (isAuthenticated && user?.role === 'admin') {
-                    navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId, paymentType: 'upi' } });
-                } else if (isAuthenticated && user?.role === 'user') {
-                    navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId, paymentType: 'upi' } });
-                } else {
+            // Fetch devotee details from devotees collection
+            const { data: devotee } = await api.get(`/devotees/${phone}`);
+            if (devotee) {
+                const prefill = {
+                    name: devotee.name || devotee.devoteeName || devotee.guestName || undefined,
+                    rashi: devotee.rashi,
+                    nakshatra: devotee.nakshatra,
+                    guestName: devotee.guestName,
+                    guestEmail: devotee.guestEmail,
+                    guestPhone: devotee.mobile || devotee.guestPhone || phone,
+                    state: devotee.state || 'Karnataka',
+                    district: devotee.district || 'Belagavi',
+                    taluk: devotee.taluk || 'Athani',
+                    place: devotee.place,
+                    pincode: devotee.pincode,
+                    address: devotee.address,
+                    paymentMode: devotee.paymentMode || 'upi'
+                };
+                try {
+                    sessionStorage.setItem('prefill_booking', JSON.stringify(prefill));
+                } catch (e) {
+                    console.warn('Could not store prefill in sessionStorage', e);
+                }
+                // Try to fetch sevas and navigate to the first one, otherwise go to listing
+                try {
+                    const { data: sevasList } = await api.get('/sevas');
+                    if (sevasList && sevasList.length > 0) {
+                        const firstId = sevasList[0]._id;
+                        const isAuthenticated = !!localStorage.getItem('token');
+                        if (isAuthenticated) {
+                            navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId, paymentType: 'upi' } });
+                        } else {
+                            navigate('/select-payment', { state: { selectedSevaId: firstId, prefill } });
+                        }
+                    } else {
+                        navigate('/sevas');
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch sevas for navigation', e);
                     navigate('/sevas');
                 }
             } else {
-                navigate('/sevas');
+                toast.error('No devotee found for this mobile number');
             }
-        } catch (e) {
-            console.warn('Failed to fetch sevas for navigation', e);
-            navigate('/sevas');
+        } catch (error) {
+            if (error.response?.status === 404) {
+                toast.error('No devotee found for this mobile number');
+            } else {
+                toast.error(t('home.error_fetch_bookings'));
+            }
+        } finally {
+            setIsTracking(false);
         }
-        setIsTracking(false);
     };
 
     // Auto-trigger search on 10 digits

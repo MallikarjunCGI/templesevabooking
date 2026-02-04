@@ -29,7 +29,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
             const tableBody = [
                 ['Reference', booking.receiptNo != null ? String(booking.receiptNo) : `#${booking._id.slice(-6).toUpperCase()}`],
                 ['Seva', booking.seva?.titleEn || 'Seva'],
-                ['Devotee', booking.fullName || booking.devoteeName || 'N/A'],
+                ['Devotee', booking.devoteeName || 'N/A'],
                 ['Date', new Date(booking.bookingDate).toLocaleDateString()],
                 ['Amount', `INR ${booking.totalAmount}`],
                 ['Status', booking.status]
@@ -100,7 +100,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
                             <div className="space-y-4 border-t border-gray-100 pt-6 sm:pt-8 mb-8 sm:mb-10">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Devotee</span>
-                                    <span className="font-bold text-gray-800">{bookings[0].fullName || bookings[0].devoteeName || 'N/A'}</span>
+                                    <span className="font-bold text-gray-800">{bookings[0].devoteeName}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Gothram</span>
@@ -139,7 +139,7 @@ const BookingLookupModal = ({ isOpen, onClose, bookings, phone }) => {
                             <button
                                 onClick={() => {
                                     sessionStorage.setItem('prefill_booking', JSON.stringify({
-                                        fullName: bookings[0].fullName || bookings[0].devoteeName,
+                                        name: bookings[0].devoteeName,
                                         gothram: bookings[0].gothram,
                                         rashi: bookings[0].rashi,
                                         nakshatra: bookings[0].nakshatra,
