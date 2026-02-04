@@ -25,18 +25,17 @@ const SevaDetails = () => {
 
     // Form state
     const [formData, setFormData] = useState({
-        name: '',
+        fullName: '',
         gothram: '',
         rashi: '',
         nakshatra: '',
-        guestName: '',
         guestEmail: '',
         guestPhone: '',
         sevaId: '' // 👈 IMPORTANT
     });
 
     const [errors, setErrors] = useState({
-        name: false,
+        fullName: false,
         guestPhone: false
     });
 
@@ -122,15 +121,12 @@ useEffect(() => {
     try {
         const raw = sessionStorage.getItem('prefill_booking');
         if (raw) {
-            console.log('Raw prefill_booking found:', raw);
             const pre = JSON.parse(raw);
-            console.log('Parsed prefill_booking:', pre);
-            // Filter out empty values so we don't overwrite good defaults with blanks
+            // Always set 'fullName' from the best available field
+            const fullName = pre.fullName || pre.name || pre.devoteeName || pre.guestName || '';
             const filtered = Object.fromEntries(
-                Object.entries(pre).filter(([, v]) => v !== undefined && v !== null && v !== '')
+                Object.entries({ ...pre, fullName }).filter(([, v]) => v !== undefined && v !== null && v !== '')
             );
-            console.log('Filtered prefill_booking:', filtered);
-            // Merge prefill so it overrides only when values are present
             setFormData(prev => ({ ...prev, ...filtered }));
 
             // If prefill contains a bookingDate, apply it to the selectedDate (normalize to yyyy-mm-dd)
@@ -192,12 +188,12 @@ const allowCustomAmount =
         const errs = {};
         const messages = [];
 
-        // Name: required, reasonable length
-        if (!formData.name || !formData.name.trim()) {
-            errs.name = true;
+        // Full Name: required, reasonable length
+        if (!formData.fullName || !formData.fullName.trim()) {
+            errs.fullName = true;
             messages.push(t('sankalpa.error_name'));
-        } else if (formData.name.trim().length > 100) {
-            errs.name = true;
+        } else if (formData.fullName.trim().length > 100) {
+            errs.fullName = true;
             messages.push(t('sankalpa.error_name'));
         }
 
@@ -261,7 +257,7 @@ const allowCustomAmount =
             const payload = {
                 sevaId: formData.sevaId,
                 sevaName: selectedSeva?.titleEn || selectedSeva?.title || '',
-                devoteeName: formData.name,
+                fullName: formData.fullName,
                 gothram: formData.gothram || undefined,
                 bookingType: 'individual',
                 count,
@@ -276,6 +272,8 @@ const allowCustomAmount =
                 address: formData.address,
                 paymentMode: formData.paymentMode
             };
+            // FRONTEND LOGGING
+            console.log('[Booking] Submitting booking payload:', payload);
             // Only for public (not logged in) users, require UTR
             if (!isAuthenticated && !utrNumber) {
                 toast.error('Cash Payment is allowed only at Seva Booking Counter.');
@@ -291,6 +289,7 @@ const allowCustomAmount =
                 payload.utrNumber = utrNumber;
             }
             const { data } = await api.post('/bookings', payload);
+            console.log('[Booking] Booking API response:', data);
             toast.success(t('bookings.success_title'));
             navigate('/booking-success', {
                 state: {
@@ -301,7 +300,8 @@ const allowCustomAmount =
                 }
             });
         } catch (e) {
-            toast.error(t('sankalpa.booking_failed'));
+            console.error('[Booking] Booking failed:', e, e?.response?.data);
+            toast.error(t('sankalpa.booking_failed') + (e?.response?.data?.message ? (': ' + e.response.data.message) : ''));
         } finally {
             setIsBooking(false);
             setShowUPI(false);
