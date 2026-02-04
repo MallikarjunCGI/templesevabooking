@@ -30,19 +30,16 @@ const HomeSearchSection = () => {
             const { data: devotee } = await api.get(`/devotees/${phone}`);
             if (devotee) {
                 const prefill = {
-                    name: devotee.name || devotee.devoteeName || devotee.guestName || undefined,
-                    rashi: devotee.rashi,
-                    nakshatra: devotee.nakshatra,
-                    guestName: devotee.guestName,
-                    guestEmail: devotee.guestEmail,
-                    guestPhone: devotee.mobile || devotee.guestPhone || phone,
+                    name: devotee.fullName || '',
+                    gothram: devotee.gothram || '',
                     state: devotee.state || 'Karnataka',
                     district: devotee.district || 'Belagavi',
                     taluk: devotee.taluk || 'Athani',
-                    place: devotee.place,
-                    pincode: devotee.pincode,
-                    address: devotee.address,
-                    paymentMode: devotee.paymentMode || 'upi'
+                    pincode: devotee.pincode || '',
+                    place: devotee.place || '',
+                    address: devotee.fullAddress || '',
+                    guestPhone: devotee.mobile || phone,
+                    // Add other fields if your SevaForm expects them
                 };
                 try {
                     sessionStorage.setItem('prefill_booking', JSON.stringify(prefill));
@@ -68,11 +65,24 @@ const HomeSearchSection = () => {
                     navigate('/sevas');
                 }
             } else {
-                toast.error('No devotee found for this mobile number');
+                // Redirect to SevaDetails page to fill the form if devotee not found
+                navigate('/sevas');
+                // Optionally, you can prefill the phone number in sessionStorage for SevaDetails
+                try {
+                    sessionStorage.setItem('prefill_booking', JSON.stringify({ guestPhone: phone }));
+                } catch (e) {
+                    console.warn('Could not store prefill in sessionStorage', e);
+                }
             }
         } catch (error) {
             if (error.response?.status === 404) {
-                toast.error('No devotee found for this mobile number');
+                // Redirect to SevaDetails page to fill the form if devotee not found
+                navigate('/sevas');
+                try {
+                    sessionStorage.setItem('prefill_booking', JSON.stringify({ guestPhone: phone }));
+                } catch (e) {
+                    console.warn('Could not store prefill in sessionStorage', e);
+                }
             } else {
                 toast.error(t('home.error_fetch_bookings'));
             }

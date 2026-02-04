@@ -79,7 +79,7 @@ const SevaListing = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-600 transition-colors" />
                         <input
                             type="text"
-                            placeholder={t('home.search_placeholder')}
+                            placeholder={t('home.search_placeholder1')}
                             className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500/20 transition-all font-medium"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}

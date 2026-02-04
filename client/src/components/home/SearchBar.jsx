@@ -24,7 +24,7 @@ const SearchBar = ({
                     {/* <Search className="text-orange-600 w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 shrink-0" /> */}
                     <input
                         type="text"
-                        placeholder={t('home.search_placeholder') || "Search for Seva or Mobile Number"}
+                        placeholder={t('home.search_placeholder') || "Search with Mobile Number"}
                         className="w-full py-2.5 sm:py-3 outline-none text-gray-700 text-sm sm:text-base font-bold placeholder:text-gray-400 bg-transparent"
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
