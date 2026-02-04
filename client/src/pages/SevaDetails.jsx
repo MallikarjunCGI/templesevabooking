@@ -272,6 +272,8 @@ const allowCustomAmount =
                 address: formData.address,
                 paymentMode: formData.paymentMode
             };
+            // FRONTEND LOGGING
+            console.log('[Booking] Submitting booking payload:', payload);
             // Only for public (not logged in) users, require UTR
             if (!isAuthenticated && !utrNumber) {
                 toast.error('Cash Payment is allowed only at Seva Booking Counter.');
@@ -287,6 +289,7 @@ const allowCustomAmount =
                 payload.utrNumber = utrNumber;
             }
             const { data } = await api.post('/bookings', payload);
+            console.log('[Booking] Booking API response:', data);
             toast.success(t('bookings.success_title'));
             navigate('/booking-success', {
                 state: {
@@ -297,7 +300,7 @@ const allowCustomAmount =
                 }
             });
         } catch (e) {
-            console.error('Booking failed:', e, e?.response?.data);
+            console.error('[Booking] Booking failed:', e, e?.response?.data);
             toast.error(t('sankalpa.booking_failed') + (e?.response?.data?.message ? (': ' + e.response.data.message) : ''));
         } finally {
             setIsBooking(false);
