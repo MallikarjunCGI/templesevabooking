@@ -297,7 +297,8 @@ const allowCustomAmount =
                 }
             });
         } catch (e) {
-            toast.error(t('sankalpa.booking_failed'));
+            console.error('Booking failed:', e, e?.response?.data);
+            toast.error(t('sankalpa.booking_failed') + (e?.response?.data?.message ? (': ' + e.response.data.message) : ''));
         } finally {
             setIsBooking(false);
             setShowUPI(false);
