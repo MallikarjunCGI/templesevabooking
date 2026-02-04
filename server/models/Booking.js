@@ -8,7 +8,7 @@ const bookingSchema = mongoose.Schema(
             ref: 'User',
         },
         // Contact info for receipt/notification
-        guestName: { type: String },
+        fullName: { type: String, required: true },
         guestEmail: { type: String },
         guestPhone: { type: String },
         
@@ -24,10 +24,7 @@ const bookingSchema = mongoose.Schema(
         },
 
         // Devotee Details (Primary Full Name)
-        devoteeName: { 
-            type: String, 
-            required: true // This is the devotee's Full Name
-        },
+        // devoteeName removed, use fullName only
         gothram: { type: String, required: false },
         rashi: { type: String, required: false },
         nakshatra: { type: String, required: false },

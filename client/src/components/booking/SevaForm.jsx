@@ -114,11 +114,11 @@ const SevaForm = ({
                         </div>
                         <input
                             type="text"
-                            name="name"
-                            value={formData.name}
+                            name="fullName"
+                            value={formData.fullName}
                             onChange={handleChange}
                             placeholder="Full Name"
-                            className={`w-full pl-10 px-4 py-3 border rounded-xl outline-none text-sm font-bold bg-white ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                            className={`w-full pl-10 px-4 py-3 border rounded-xl outline-none text-sm font-bold bg-white ${errors.fullName ? 'border-red-500' : 'border-gray-200'}`}
                             required
                         />
                     </div>

@@ -10,7 +10,7 @@ const createBooking = asyncHandler(async (req, res) => {
     const {
         sevaId,
         sevaName,
-        devoteeName,
+        fullName,
         gothram,
         bookingType,
         count,
@@ -42,7 +42,7 @@ const createBooking = asyncHandler(async (req, res) => {
         // Upsert devotee
         let devotee = await Devotee.findOne({ mobile: guestPhone });
         if (devotee) {
-            devotee.fullName = devoteeName;
+            devotee.fullName = fullName;
             devotee.gothram = gothram || devotee.gothram;
             devotee.state = state || devotee.state;
             devotee.district = district || devotee.district;
@@ -56,7 +56,7 @@ const createBooking = asyncHandler(async (req, res) => {
         } else {
             devotee = new Devotee({
                 mobile: guestPhone,
-                fullName: devoteeName,
+                fullName: fullName,
                 gothram,
                 state,
                 district,
@@ -75,7 +75,7 @@ const createBooking = asyncHandler(async (req, res) => {
             guestPhone: guestPhone || (req.user ? req.user.phone : null),
             seva: sevaId,
             sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
-            devoteeName,
+            fullName,
             gothram: gothram || undefined,
             receiptNo,
             state,
@@ -97,7 +97,7 @@ const createBooking = asyncHandler(async (req, res) => {
         const createdBooking = await booking.save();
 
         // Create Notification for Admin
-        const nameFor = req.user ? req.user.name : (devoteeName || guestPhone || 'Guest');
+        const nameFor = req.user ? req.user.name : (fullName || guestPhone || 'Guest');
         await Notification.create({
             type: 'booking',
             message: `New booking for ${sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : 'Seva'} by ${nameFor}`,
@@ -131,7 +131,7 @@ const updateBooking = asyncHandler(async (req, res) => {
     const booking = await Booking.findById(req.params.id);
 
     if (booking) {
-        booking.devoteeName = req.body.devoteeName || booking.devoteeName;
+        booking.fullName = req.body.fullName || booking.fullName;
         booking.gothram = req.body.gothram || booking.gothram;
         booking.rashi = req.body.rashi || booking.rashi;
         booking.nakshatra = req.body.nakshatra || booking.nakshatra;
