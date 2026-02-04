@@ -339,7 +339,7 @@ const SankalpaForm = ({
           const { data } = await api.get(`/devotees/${cleaned}`);
           // Prefill all relevant fields if devotee found
           if (data) {
-            handleChange({ target: { name: 'fullName', value: data.fullName || '' } });
+            handleChange({ target: { name: 'name', value: data.fullName || '' } });
             handleChange({ target: { name: 'gothram', value: data.gothram || '' } });
             handleChange({ target: { name: 'state', value: data.state || 'Karnataka' } });
             handleChange({ target: { name: 'district', value: data.district || 'Belagavi' } });
@@ -495,24 +495,24 @@ useEffect(() => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-orange-600/70 uppercase tracking-[0.2em] mb-2">{t('sankalpa.label_full_name')} *</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-4 w-4 text-orange-600" />
+                    <label className="block text-[10px] font-black text-orange-600/70 uppercase tracking-[0.2em] mb-2">{t('sankalpa.label_full_name')} *</label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name ?? ''}
+                            onChange={handleChange}
+                            placeholder={t('sankalpa.placeholder_devotee_name')}
+                            className={`w-full pl-10 px-4 py-3 border rounded-xl outline-none text-sm font-bold bg-white ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                            required
+                        />
+                        {errors.name && (
+                            <p className="text-sm text-red-600 mt-1">{t('sankalpa.error_name')}</p>
+                        )}
                     </div>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName ?? ''}
-                      onChange={handleChange}
-                      placeholder={t('sankalpa.placeholder_devotee_name')}
-                      className={`w-full pl-10 px-4 py-3 border rounded-xl outline-none text-sm font-bold bg-white ${errors.fullName ? 'border-red-500' : 'border-gray-200'}`}
-                      required
-                    />
-                    {errors.fullName && (
-                      <p className="text-sm text-red-600 mt-1">{t('sankalpa.error_name')}</p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Gothram (optional) */}

@@ -10,7 +10,7 @@ const createBooking = asyncHandler(async (req, res) => {
     const {
         sevaId,
         sevaName,
-        fullName,
+        devoteeName,
         gothram,
         bookingType,
         count,
@@ -42,7 +42,7 @@ const createBooking = asyncHandler(async (req, res) => {
         // Upsert devotee
         let devotee = await Devotee.findOne({ mobile: guestPhone });
         if (devotee) {
-            devotee.fullName = fullName;
+            devotee.fullName = devoteeName;
             devotee.gothram = gothram || devotee.gothram;
             devotee.state = state || devotee.state;
             devotee.district = district || devotee.district;
@@ -56,7 +56,7 @@ const createBooking = asyncHandler(async (req, res) => {
         } else {
             devotee = new Devotee({
                 mobile: guestPhone,
-                fullName: fullName,
+                fullName: devoteeName,
                 gothram,
                 state,
                 district,
@@ -75,7 +75,7 @@ const createBooking = asyncHandler(async (req, res) => {
             guestPhone: guestPhone || (req.user ? req.user.phone : null),
             seva: sevaId,
             sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
-            fullName,
+            devoteeName,
             gothram: gothram || undefined,
             receiptNo,
             state,
@@ -97,7 +97,7 @@ const createBooking = asyncHandler(async (req, res) => {
         const createdBooking = await booking.save();
 
         // Create Notification for Admin
-        const nameFor = req.user ? req.user.name : (fullName || guestPhone || 'Guest');
+        const nameFor = req.user ? req.user.name : (devoteeName || guestPhone || 'Guest');
         await Notification.create({
             type: 'booking',
             message: `New booking for ${sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : 'Seva'} by ${nameFor}`,
@@ -124,80 +124,66 @@ const getBookings = asyncHandler(async (req, res) => {
     res.json(bookings);
 });
 
-    try {
-        // BACKEND LOGGING: Log incoming booking request
-        console.log('[BookingController] Incoming booking request:', req.body);
-        // Fetch Seva details to allow a readable sevaName snapshot if not provided
-        let sevaDetails = null;
-        if (!sevaName && sevaId) {
-            sevaDetails = await Seva.findById(sevaId);
-        }
+// @desc    Update booking
+// @route   PUT /api/bookings/:id
+// @access  Private/Admin
+const updateBooking = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
 
-        // If user is logged in, fetch user details
-        let user = null;
-        if (req.user) {
-            user = await User.findById(req.user._id);
-        }
+    if (booking) {
+        booking.devoteeName = req.body.devoteeName || booking.devoteeName;
+        booking.gothram = req.body.gothram || booking.gothram;
+        booking.rashi = req.body.rashi || booking.rashi;
+        booking.nakshatra = req.body.nakshatra || booking.nakshatra;
+        booking.bookingDate = req.body.bookingDate || booking.bookingDate;
+        booking.status = req.body.status || booking.status;
+        // update contact phone if provided
+        booking.guestPhone = req.body.guestPhone || booking.guestPhone;
+        // Location and additional editable fields
+        booking.state = req.body.state || booking.state;
+        booking.district = req.body.district || booking.district;
+        booking.taluk = req.body.taluk || booking.taluk;
+        booking.pincode = req.body.pincode || booking.pincode;
+        booking.place = req.body.place || booking.place;
+        booking.address = req.body.address || booking.address;
+        booking.paymentMode = req.body.paymentMode || booking.paymentMode;
+        // Allow changing seva/sevaName and totalAmount if provided
+        if (req.body.seva) booking.seva = req.body.seva;
+        if (req.body.sevaName) booking.sevaName = req.body.sevaName;
+        if (req.body.totalAmount !== undefined) booking.totalAmount = req.body.totalAmount;
+        if (typeof req.body.photoOrderCompleted === 'boolean') booking.photoOrderCompleted = req.body.photoOrderCompleted;
 
-        // If devotee exists for phone, update their info
-        let devotee = null;
-        if (guestPhone) {
-            devotee = await Devotee.findOne({ mobile: guestPhone });
-            if (devotee) {
-                devotee.fullName = fullName;
-                devotee.gothram = gothram;
-                devotee.rashi = rashi;
-                devotee.nakshatra = nakshatra;
-                devotee.guestEmail = guestEmail;
-                devotee.state = state;
-                devotee.district = district;
-                devotee.taluk = taluk;
-                devotee.pincode = pincode;
-                devotee.place = place;
-                devotee.fullAddress = address;
-                await devotee.save();
-            }
-        }
-
-        // Create booking
-        const booking = new Booking({
-            user: req.user ? req.user._id : undefined,
-            seva: sevaId,
-            sevaName: sevaName || (sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : undefined),
-            fullName,
-            gothram,
-            rashi,
-            nakshatra,
-            guestEmail,
-            guestPhone,
-            bookingType,
-            count,
-            totalAmount,
-            bookingDate,
-            state,
-            district,
-            taluk,
-            pincode,
-            place,
-            address,
-            paymentMode,
-            utrNumber
-        });
-        console.log('[BookingController] Booking document to save:', booking);
-        await booking.save();
-
-        // Send notification (optional)
-        if (booking) {
-            const nameFor = req.user ? req.user.name : (fullName || guestPhone || 'Guest');
-            await Notification.create({
-                type: 'booking',
-                message: `New booking for ${sevaDetails ? (sevaDetails.titleEn || sevaDetails.title) : 'Seva'} by ${nameFor}`,
-                booking: booking._id
-            });
-        }
-
-        res.status(201).json(booking);
-    } catch (error) {
-        console.error('[BookingController] Booking creation failed:', error, error?.stack);
-        res.status(500).json({ message: 'Booking creation failed', error: error.message, stack: error.stack });
+        const updatedBooking = await booking.save();
+        res.json(updatedBooking);
+    } else {
+        res.status(404);
+        throw new Error('Booking not found');
     }
+});
+
+// @desc    Delete booking
+// @route   DELETE /api/bookings/:id
+// @access  Private/Admin
+const deleteBooking = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
+
+    if (booking) {
+        await booking.deleteOne();
+        res.json({ message: 'Booking removed' });
+    } else {
+        res.status(404);
+        throw new Error('Booking not found');
+    }
+});
+
+// @desc    Get bookings by guest phone number
+// @route   GET /api/bookings/track/:phone
+// @access  Public
+const getBookingsByPhone = asyncHandler(async (req, res) => {
+    const bookings = await Booking.find({ guestPhone: req.params.phone })
+        .populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn image')
+        .sort('-createdAt');
+    res.json(bookings);
+});
+
+module.exports = { createBooking, getMyBookings, getBookings, updateBooking, deleteBooking, getBookingsByPhone };
