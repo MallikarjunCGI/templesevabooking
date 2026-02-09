@@ -76,6 +76,14 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
+app.get('/api/version', (req, res) => {
+    res.json({
+        service: 'temple-seva-api',
+        version: process.env.APP_VERSION || 'dev',
+        timestamp: new Date().toISOString()
+    });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
