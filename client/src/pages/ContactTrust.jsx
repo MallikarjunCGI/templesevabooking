@@ -26,7 +26,7 @@ const ContactTrust = () => {
                     className="inline-flex items-center justify-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t('contact_trust.back_to_sevas', 'Back to View Seva')}
+                    {t('contact_trust.back_to_sevas', 'Back to View Sevas')}
                 </Link>
             </div>
         </div>
