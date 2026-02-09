@@ -35,9 +35,9 @@
     },
     "contact_trust": {
         "title": "Seva Booking",
-        "message": "Please contact Temple Booking counter for any Seva Booking through Cash.",
+        "message": "Please contact Temple Booking counter for any Seva Booking.",
         "subtext": "Visit the temple office or call the 9019664308 to book your seva.",
-        "back_to_sevas": "Back to Book Seva"
+        "back_to_sevas": "Back to View sevas"
     },
     "auth": {
         "login_title": "Welcome Back",

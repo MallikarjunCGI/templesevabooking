@@ -178,6 +178,16 @@ const deleteBooking = asyncHandler(async (req, res) => {
     const booking = await Booking.findById(req.params.id);
 
     if (booking) {
+        // Adjust devotee totals if possible
+        if (booking.guestPhone) {
+            const Devotee = require('../models/Devotee');
+            const devotee = await Devotee.findOne({ mobile: booking.guestPhone });
+            if (devotee) {
+                devotee.totalAmountSpent = Math.max(0, (devotee.totalAmountSpent || 0) - (Number(booking.totalAmount) || 0));
+                devotee.sevaCount = Math.max(0, (devotee.sevaCount || 0) - 1);
+                await devotee.save();
+            }
+        }
         await booking.deleteOne();
         res.json({ message: 'Booking removed' });
     } else {

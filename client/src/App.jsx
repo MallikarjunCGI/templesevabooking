@@ -29,6 +29,7 @@ const SevaManagement = lazy(() => import('./pages/admin/SevaManagement'))
 const HeroManagement = lazy(() => import('./pages/admin/HeroManagement'))
 const PhotoOrders = lazy(() => import('./pages/admin/PhotoOrders'))
 const SettingsBoundary = lazy(() => import('./pages/admin/Settings'))
+const DevoteesList = lazy(() => import('./pages/admin/DevoteesList'))
 
 // Loading Component
 const PageLoader = () => (
@@ -74,6 +75,7 @@ function App() {
                             <Route path="hero" element={<HeroManagement />} />
                             <Route path="settings" element={<SettingsBoundary />} />
                             <Route path="counter-bookings" element={<CounterBookings />} />
+                            <Route path="devotees" element={<DevoteesList />} />
                         </Route>
                     </Route>
                 </Routes>

@@ -16,7 +16,7 @@ const ContactTrust = () => {
                     {t('contact_trust.title', 'Seva Booking')}
                 </h1>
                 <p className="text-gray-700 text-lg font-medium leading-relaxed mb-6">
-                    {t('contact_trust.message', 'Please contact Temple Booking counter for any Seva Booking through Cash.')}
+                    {t('contact_trust.message', 'Please contact Temple Booking counter for any Seva Booking.')}
                 </p>
                 <p className="text-sm text-gray-500 mb-8">
                     {t('contact_trust.subtext', 'Visit the temple office or call the 9019664308 to book your seva.')}
@@ -26,7 +26,7 @@ const ContactTrust = () => {
                     className="inline-flex items-center justify-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t('contact_trust.back_to_sevas', 'Back to Book Seva')}
+                    {t('contact_trust.back_to_sevas', 'Back to View Seva')}
                 </Link>
             </div>
         </div>
