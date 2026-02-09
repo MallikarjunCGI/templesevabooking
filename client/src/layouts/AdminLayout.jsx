@@ -3,7 +3,7 @@ import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { LayoutDashboard, Users, FileText, Settings, Bell, LogOut, Home, BookOpen, Image } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ const AdminLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -40,10 +41,13 @@ const AdminLayout = () => {
     };
 
     useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-        return () => clearInterval(interval);
-    }, []);
+        if (user?.role === 'admin') {
+            fetchNotifications();
+            const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+            return () => clearInterval(interval);
+        }
+        return undefined;
+    }, [user?.role]);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -51,13 +55,15 @@ const AdminLayout = () => {
         navigate('/login');
     };
 
-    const navItems = [
-        { name: t('admin.layout.sankalpa_list'), path: '/admin/sankalpa', icon: Users },
-        { name: 'Photo Orders', path: '/admin/photo-orders', icon: Image },
-        { name: t('admin.layout.seva_management'), path: '/admin/sevas', icon: FileText },
-        { name: t('admin.layout.hero_management'), path: '/admin/hero', icon: Image },
-        { name: t('admin.layout.settings'), path: '/admin/settings', icon: Settings },
-    ];
+    const navItems = user?.role === 'counter'
+        ? [{ name: 'Total Seva Bookings', path: '/admin/counter-bookings', icon: BookOpen }]
+        : [
+            { name: t('admin.layout.sankalpa_list'), path: '/admin/sankalpa', icon: Users },
+            { name: 'Photo Orders', path: '/admin/photo-orders', icon: Image },
+            { name: t('admin.layout.seva_management'), path: '/admin/sevas', icon: FileText },
+            { name: t('admin.layout.hero_management'), path: '/admin/hero', icon: Image },
+            { name: t('admin.layout.settings'), path: '/admin/settings', icon: Settings },
+        ];
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -113,45 +119,52 @@ const AdminLayout = () => {
                         >
                             <BookOpen className="w-5 h-5" />
                         </Link>
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="p-2 text-gray-400 hover:text-orange-600 transition-colors relative"
-                            >
-                                <Bell className="w-5 h-5" />
-                                {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>}
-                            </button>
+                        {user?.role === 'admin' && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowNotifications(!showNotifications)}
+                                    className="p-2 text-gray-400 hover:text-orange-600 transition-colors relative"
+                                >
+                                    <Bell className="w-5 h-5" />
+                                    {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>}
+                                </button>
 
-                            {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                                    <div className="px-4 py-2 border-b border-gray-100">
-                                        <h3 className="font-bold text-gray-800">Notifications</h3>
-                                    </div>
-                                    <div className="max-h-96 overflow-y-auto">
-                                        {notifications.length > 0 ? (
-                                            notifications.map(notification => (
-                                                <div
-                                                    key={notification._id}
-                                                    className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors cursor-pointer ${!notification.isRead ? 'bg-orange-50/50' : ''}`}
-                                                    onClick={() => !notification.isRead && markAsRead(notification._id)}
-                                                >
-                                                    <p className={`text-sm ${!notification.isRead ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>
-                                                        {notification.message}
-                                                    </p>
-                                                    <span className="text-xs text-gray-400 mt-1 block">
-                                                        {new Date(notification.createdAt).toLocaleString()}
-                                                    </span>
+                                {showNotifications && (
+                                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                                        <div className="px-4 py-2 border-b border-gray-100">
+                                            <h3 className="font-bold text-gray-800">Notifications</h3>
+                                        </div>
+                                        <div className="max-h-96 overflow-y-auto">
+                                            {notifications.length > 0 ? (
+                                                notifications.map(notification => (
+                                                    <div
+                                                        key={notification._id}
+                                                        className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors cursor-pointer ${!notification.isRead ? 'bg-orange-50/50' : ''}`}
+                                                        onClick={() => !notification.isRead && markAsRead(notification._id)}
+                                                    >
+                                                        <p className={`text-sm ${!notification.isRead ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>
+                                                            {notification.message}
+                                                        </p>
+                                                        <span className="text-xs text-gray-400 mt-1 block">
+                                                            {new Date(notification.createdAt).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                                                    {t('admin.notifications.empty', 'No new notifications')}
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                                                {t('admin.notifications.empty', 'No new notifications')}
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
+                        {user?.role === 'counter' && (
+                            <span className="text-sm font-bold text-gray-600">
+                                Logged in as {user?.name}
+                            </span>
+                        )}
                         <div className="h-8 w-px bg-gray-200 mx-2"></div>
                         <button
                             onClick={handleLogout}

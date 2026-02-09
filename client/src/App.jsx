@@ -4,6 +4,7 @@ import Navbar from './components/common/Navbar'
 import Footer from './components/common/Footer'
 import BackgroundWrapper from './components/common/BackgroundWrapper'
 import ScrollToTop from './components/common/ScrollToTop'
+import { useSelector } from 'react-redux'
 
 // Pages
 import { Suspense, lazy } from 'react'
@@ -17,7 +18,7 @@ const SevaListing = lazy(() => import('./pages/SevaListing'))
 const SevaDetails = lazy(() => import('./pages/SevaDetails'))
 const BookingSuccess = lazy(() => import('./pages/BookingSuccess'))
 const ContactTrust = lazy(() => import('./pages/ContactTrust'))
-const PaymentTypeSelect = lazy(() => import('./pages/PaymentTypeSelect'))
+const CounterBookings = lazy(() => import('./pages/admin/CounterBookings'))
 
 // Admin Lazy Load
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
@@ -36,6 +37,14 @@ const PageLoader = () => (
     </div>
 )
 
+const AdminIndexRedirect = () => {
+    const { user } = useSelector((state) => state.auth);
+    if (user?.role === 'counter') {
+        return <Navigate to="counter-bookings" replace />;
+    }
+    return <Navigate to="sankalpa" replace />;
+};
+
 function App() {
     return (
         <>
@@ -53,18 +62,18 @@ function App() {
                         <Route path="/bookings" element={<Bookings />} />
                         <Route path="/booking-success" element={<BookingSuccess />} />
                         <Route path="/contact-trust" element={<ContactTrust />} />
-                        <Route path="/select-payment" element={<PaymentTypeSelect />} />
                     </Route>
 
                     {/* Admin Routes */}
                     <Route element={<AdminRoute />}>
                         <Route path="/admin" element={<AdminLayout />}>
-                            <Route index element={<Navigate to="sankalpa" replace />} />
+                            <Route index element={<AdminIndexRedirect />} />
                             <Route path="sankalpa" element={<SankalpaList />} />
                             <Route path="photo-orders" element={<PhotoOrders />} />
                             <Route path="sevas" element={<SevaManagement />} />
                             <Route path="hero" element={<HeroManagement />} />
                             <Route path="settings" element={<SettingsBoundary />} />
+                            <Route path="counter-bookings" element={<CounterBookings />} />
                         </Route>
                     </Route>
                 </Routes>

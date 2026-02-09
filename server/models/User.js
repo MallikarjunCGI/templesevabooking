@@ -19,7 +19,7 @@ const userSchema = mongoose.Schema(
         role: {
             type: String,
             required: true,
-            default: 'user', // user, admin, priest
+            default: 'user', // user, admin, priest, counter
         },
         phone: {
             type: String,

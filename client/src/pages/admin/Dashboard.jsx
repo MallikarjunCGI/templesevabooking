@@ -13,7 +13,9 @@ const Dashboard = () => {
         revenue: 0,
         bookings: 0,
         devotees: 0,
-        averageBooking: 0
+        averageBooking: 0,
+        upiAmount: 0,
+        cashAmount: 0
     });
     const [recentBookings, setRecentBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,6 +27,12 @@ const Dashboard = () => {
 
                 // Calculate Stats Correctly
                 const revenue = bookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+                const upiAmount = bookings
+                    .filter((b) => b.paymentMode === 'upi')
+                    .reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+                const cashAmount = bookings
+                    .filter((b) => b.paymentMode === 'cash')
+                    .reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
                 const totalDevotees = bookings.length; // Each booking is technically a devotee record
                 const average = revenue > 0 ? (revenue / bookings.length).toFixed(0) : 0;
 
@@ -32,7 +40,9 @@ const Dashboard = () => {
                     revenue,
                     bookings: bookings.length,
                     devotees: totalDevotees,
-                    averageBooking: average
+                    averageBooking: average,
+                    upiAmount,
+                    cashAmount
                 });
 
                 // Get recent 8 for better look
@@ -68,6 +78,34 @@ const Dashboard = () => {
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium text-gray-600 uppercase tracking-wider">{t('admin.layout.system_live')}</span>
                 </div>
+            </div>
+
+            {/* Top Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <KPICard
+                    title="Total Seva Booking Amount"
+                    value={`₹${stats.revenue.toLocaleString()}`}
+                    icon={CreditCard}
+                    color="bg-emerald-500"
+                    trend="up"
+                    trendValue="12"
+                />
+                <KPICard
+                    title="Amount by UPI"
+                    value={`₹${stats.upiAmount.toLocaleString()}`}
+                    icon={CreditCard}
+                    color="bg-green-500"
+                    trend="up"
+                    trendValue="5"
+                />
+                <KPICard
+                    title="Amount by Cash"
+                    value={`₹${stats.cashAmount.toLocaleString()}`}
+                    icon={CreditCard}
+                    color="bg-orange-500"
+                    trend="up"
+                    trendValue="3"
+                />
             </div>
 
             {/* KPI Grid */}

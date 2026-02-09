@@ -112,7 +112,17 @@ const createBooking = asyncHandler(async (req, res) => {
 // @route   GET /api/bookings/mybookings
 // @access  Private
 const getMyBookings = asyncHandler(async (req, res) => {
-    const bookings = await Booking.find({ user: req.user._id }).populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn');
+    const filters = { user: req.user._id };
+    if (req.query.date) {
+        const start = new Date(req.query.date);
+        const end = new Date(req.query.date);
+        if (!isNaN(start.getTime())) {
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            filters.bookingDate = { $gte: start, $lte: end };
+        }
+    }
+    const bookings = await Booking.find(filters).populate('seva', 'titleEn titleKn templeNameEn templeNameKn locationEn locationKn');
     res.json(bookings);
 });
 

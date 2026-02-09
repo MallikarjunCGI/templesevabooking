@@ -78,7 +78,7 @@ const Navbar = () => {
                                     </Link>
                                 )} */}
 
-                            {isAuthenticated && user?.role === 'admin' && (
+                            {isAuthenticated && (user?.role === 'admin' || user?.role === 'counter') && (
                                 <Link
                                     to="/admin"
                                     className={`px-3 xl:px-4 py-2 rounded-full text-xs xl:text-sm font-bold transition-all ${location.pathname.startsWith('/admin')
@@ -86,7 +86,7 @@ const Navbar = () => {
                                         : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
                                         }`}
                                 >
-                                    Dashboard
+                                    {user?.role === 'counter' ? 'Counter' : 'Dashboard'}
                                 </Link>
                             )}
                         </div>
@@ -110,7 +110,9 @@ const Navbar = () => {
                                     <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center">
                                         <User className="w-4 h-4 text-white" />
                                     </div>
-                                    <span className="text-xs xl:text-sm font-bold max-w-[100px] truncate">{user.name}</span>
+                                    <span className="text-xs xl:text-sm font-bold max-w-[140px] truncate">
+                                        {user.role === 'counter' ? `Logged in as ${user.name}` : user.name}
+                                    </span>
                                     <ChevronDown className={`w-4 h-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
@@ -125,7 +127,16 @@ const Navbar = () => {
                                                 Dashboard
                                             </Link>
                                         )}
-                                        {user.role !== 'admin' && (
+                                        {user.role === 'counter' && (
+                                            <Link
+                                                to="/admin/counter-bookings"
+                                                onClick={() => setIsProfileOpen(false)}
+                                                className="block px-6 py-3 text-sm font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                                            >
+                                                Total Seva Bookings
+                                            </Link>
+                                        )}
+                                        {user.role === 'user' && (
                                             <Link
                                                 to="/bookings"
                                                 onClick={() => setIsProfileOpen(false)}

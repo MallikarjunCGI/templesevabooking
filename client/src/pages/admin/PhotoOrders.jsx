@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Filter, Loader2, Download } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const PhotoOrders = () => {
     const { t } = useTranslation();
@@ -52,6 +54,82 @@ const PhotoOrders = () => {
         return !b.photoOrderCompleted;
     });
 
+    const totals = useMemo(() => {
+        const totalAmount = filteredWithCompletion.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+        const upiAmount = filteredWithCompletion
+            .filter((b) => b.paymentMode === 'upi')
+            .reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+        const cashAmount = filteredWithCompletion
+            .filter((b) => b.paymentMode === 'cash')
+            .reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+        return { totalAmount, upiAmount, cashAmount };
+    }, [filteredWithCompletion]);
+
+    const exportCSV = () => {
+        try {
+            const header = ['Phone Number', 'Full Name', 'Booking Date', 'Full Address', 'State', 'District', 'Taluk', 'Pin Code'];
+            const rows = filteredWithCompletion.map(item => [
+                item.guestPhone || item.user?.phone || '',
+                item.devoteeName || '',
+                item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : '',
+                item.address || '',
+                item.state || '',
+                item.district || '',
+                item.taluk || '',
+                item.pincode || ''
+            ]);
+            const csvContent = [header, ...rows]
+                .map(e => e.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
+                .join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Photo_Orders_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success('CSV exported');
+        } catch (e) {
+            toast.error('Failed to export CSV');
+        }
+    };
+
+    const exportPDF = () => {
+        try {
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.text('Photo Orders', 14, 22);
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+
+            const tableColumn = ['Phone', 'Full Name', 'Booking Date', 'Full Address', 'State', 'District', 'Taluk', 'Pin Code'];
+            const tableRows = filteredWithCompletion.map(item => [
+                item.guestPhone || item.user?.phone || '',
+                item.devoteeName || '',
+                item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : '',
+                item.address || '',
+                item.state || '',
+                item.district || '',
+                item.taluk || '',
+                item.pincode || ''
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 40,
+                theme: 'grid',
+                headStyles: { fillColor: [234, 88, 12] },
+                styles: { fontSize: 10 }
+            });
+            doc.save(`Photo_Orders_${new Date().toISOString().split('T')[0]}.pdf`);
+            toast.success('PDF exported');
+        } catch (e) {
+            toast.error('Failed to export PDF');
+        }
+    };
+
     const toggleCompleted = async (b) => {
         try {
             const res = await api.put(`/bookings/${b._id}`, { photoOrderCompleted: !b.photoOrderCompleted });
@@ -74,7 +152,22 @@ const PhotoOrders = () => {
                 <h2 className="text-2xl font-bold">Photo Orders</h2>
                 <p className="text-sm text-gray-500">Temple God Photo Orders</p>
             </div>
-                <div className="p-4">
+            <div className="p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Amount</p>
+                        <p className="text-2xl font-black text-gray-900 mt-2">₹{totals.totalAmount.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount in UPI</p>
+                        <p className="text-2xl font-black text-green-600 mt-2">₹{totals.upiAmount.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount in Cash</p>
+                        <p className="text-2xl font-black text-orange-600 mt-2">₹{totals.cashAmount.toFixed(2)}</p>
+                    </div>
+                </div>
+
                 <div className="flex flex-col md:flex-row md:items-center md:gap-4">
                     <div className="max-w-md w-full md:flex-1">
                         <div className="relative">
@@ -89,6 +182,22 @@ const PhotoOrders = () => {
                             <option value="completed">Completed</option>
                             <option value="pending">Pending</option>
                         </select>
+                    </div>
+                    <div className="mt-3 md:mt-0 md:ml-auto flex items-center gap-2">
+                        <button
+                            onClick={exportPDF}
+                            className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            PDF
+                        </button>
+                        <button
+                            onClick={exportCSV}
+                            className="flex items-center px-4 py-2 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 shadow-md shadow-orange-200 transition-all active:scale-95"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export CSV
+                        </button>
                     </div>
                 </div>
             </div>

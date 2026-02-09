@@ -3,7 +3,7 @@ import { Search, Filter, Download, Loader2, Edit2, Trash2, X } from 'lucide-reac
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 import { useTranslation } from 'react-i18next';
 
@@ -18,6 +18,8 @@ const SankalpaList = () => {
     const [sevas, setSevas] = useState([]);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState('all');
     
 
     const fetchBookings = async () => {
@@ -41,9 +43,19 @@ const SankalpaList = () => {
         }
     };
 
+    const fetchUsers = async () => {
+        try {
+            const { data } = await api.get('/auth/users');
+            setUsers(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.warn('Failed to fetch users', e);
+        }
+    };
+
     useEffect(() => {
         fetchBookings();
         fetchSevas();
+        fetchUsers();
     }, []);
 
     const handleDelete = async (id) => {
@@ -108,7 +120,7 @@ const SankalpaList = () => {
                 item.pincode || ''
             ]);
 
-            doc.autoTable({
+            autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
                 startY: 40,
@@ -125,15 +137,20 @@ const SankalpaList = () => {
 
     const handleExportCSV = () => {
         try {
-            const header = ['Phone Number','Devotee Name','Seva Name','Amount','Booking Date','Village','Pincode'];
+            const header = ['Phone Number','Full Name','Seva Name','Booking Date','State','District','Taluk','Village','Full Address','Pin Code','Payment Mode','Amount'];
             const rows = filteredBookings.map(item => [
                 item.guestPhone || item.user?.phone || '',
                 item.devoteeName || '',
                 item.sevaName || item.seva?.titleEn || item.seva?.title || '',
-                item.totalAmount || 0,
                 item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : '',
+                item.state || '',
+                item.district || '',
+                item.taluk || '',
                 item.place || '',
-                item.pincode || ''
+                item.address || '',
+                item.pincode || '',
+                item.paymentMode || '',
+                item.totalAmount || 0
             ]);
 
             const csvContent = [header, ...rows].map(e => e.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
@@ -164,6 +181,12 @@ const SankalpaList = () => {
             const e = new Date(endDate);
             e.setHours(23,59,59,999);
             if (!bd || bd > e) return false;
+        }
+
+        if (selectedUser === 'guest' && item.user) return false;
+        if (selectedUser !== 'all' && selectedUser !== 'guest') {
+            const userId = item.user?._id || item.user;
+            if (!userId || String(userId) !== String(selectedUser)) return false;
         }
 
         if (!searchTerm) return true;
@@ -201,6 +224,12 @@ const SankalpaList = () => {
     });
 
     const totalDonation = sortedBookings.reduce((s, b) => s + (Number(b.totalAmount) || 0), 0);
+    const totalUpi = sortedBookings
+        .filter((b) => b.paymentMode === 'upi')
+        .reduce((s, b) => s + (Number(b.totalAmount) || 0), 0);
+    const totalCash = sortedBookings
+        .filter((b) => b.paymentMode === 'cash')
+        .reduce((s, b) => s + (Number(b.totalAmount) || 0), 0);
     const totalBooked = sortedBookings.length;
 
     
@@ -220,17 +249,28 @@ const SankalpaList = () => {
                     <h2 className="text-3xl font-bold text-gray-900 font-serif">Seva List</h2>
                     <p className="text-gray-500 mt-1">Seva Register</p>
                 </div>
-                    <div className="flex items-center space-x-6">
-                        <div className="text-left">
-                            <div className="text-sm text-gray-500">Total Donation</div>
-                            <div className="text-xl font-bold text-orange-600">₹{totalDonation}</div>
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Amount</p>
+                            <p className="text-2xl font-black text-gray-900 mt-2">Rs. {totalDonation}</p>
                         </div>
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount in UPI</p>
+                            <p className="text-2xl font-black text-green-600 mt-2">Rs. {totalUpi}</p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Amount in Cash</p>
+                            <p className="text-2xl font-black text-orange-600 mt-2">Rs. {totalCash}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6 md:ml-auto">
                         <div className="text-left">
                             <div className="text-sm text-gray-500">Total Booked Seva</div>
                             <div className="text-xl font-bold text-gray-900">{totalBooked}</div>
                         </div>
-
-                        <div className="ml-6 flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={handleExportPDF}
                                 className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
@@ -247,6 +287,7 @@ const SankalpaList = () => {
                             </button>
                         </div>
                     </div>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -266,11 +307,28 @@ const SankalpaList = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <label className="text-sm text-gray-500">User</label>
+                        <select
+                            value={selectedUser}
+                            onChange={(e) => setSelectedUser(e.target.value)}
+                            className="p-2 border border-gray-200 rounded-lg bg-white"
+                        >
+                            <option value="all">All</option>
+                            <option value="guest">Guest (No User)</option>
+                            {users.map((u) => (
+                                <option key={u._id} value={u._id}>
+                                    {u.name} ({u.role})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-3">
                         <label className="text-sm text-gray-500">From</label>
                         <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="p-2 border border-gray-200 rounded-lg" />
                         <label className="text-sm text-gray-500">To</label>
                         <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="p-2 border border-gray-200 rounded-lg" />
-                        <button onClick={() => { setStartDate(''); setEndDate(''); }} className="p-2 border border-gray-200 rounded-lg bg-white">Clear</button>
+                        <button onClick={() => { setStartDate(''); setEndDate(''); setSearchTerm(''); setSelectedUser('all'); }} className="p-2 border border-gray-200 rounded-lg bg-white">Clear</button>
                     </div>
                 </div>
 
@@ -282,6 +340,7 @@ const SankalpaList = () => {
                                 <th onClick={() => { setSortBy('phone'); setSortDir(sortBy === 'phone' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Phone Number</th>
                                 <th onClick={() => { setSortBy('devotee'); setSortDir(sortBy === 'devotee' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Devotee Name</th>
                                 <th onClick={() => { setSortBy('seva'); setSortDir(sortBy === 'seva' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Seva Name</th>
+                                <th className="px-6 py-5">Payment Mode</th>
                                 <th onClick={() => { setSortBy('amount'); setSortDir(sortBy === 'amount' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Amount</th>
                                 <th onClick={() => { setSortBy('bookingDate'); setSortDir(sortBy === 'bookingDate' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Booking Date</th>
                                 <th onClick={() => { setSortBy('place'); setSortDir(sortBy === 'place' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Village</th>
@@ -295,7 +354,12 @@ const SankalpaList = () => {
                                     <td className="px-6 py-5 font-mono text-gray-600">{item.guestPhone || item.user?.phone || ''}</td>
                                     <td className="px-6 py-5 font-bold text-gray-900">{item.devoteeName}</td>
                                     <td className="px-6 py-5 font-medium text-gray-700">{item.sevaName || item.seva?.titleEn || item.seva?.title}</td>
-                                    <td className="px-6 py-5 font-bold text-orange-600">₹{item.totalAmount || 0}</td>
+                                    <td className="px-6 py-5">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${item.paymentMode === 'cash' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                            {item.paymentMode || 'upi'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-5 font-bold text-orange-600">Rs. {item.totalAmount || 0}</td>
                                     <td className="px-6 py-5 font-mono text-gray-500">{item.bookingDate ? new Date(item.bookingDate).toLocaleDateString() : ''}</td>
                                     <td className="px-6 py-5">{item.place || ''}</td>
                                     <td className="px-6 py-5">{item.pincode || ''}</td>
@@ -481,3 +545,11 @@ const SankalpaList = () => {
 };
 
 export default SankalpaList;
+
+
+
+
+
+
+
+

@@ -57,13 +57,7 @@ const SevaCard = ({ seva }) => {
                     <button
                         onClick={() => {
                             if (!isAuthenticated) {
-                                // Pass prefill if available from sessionStorage
-                                let prefill = {};
-                                try {
-                                    const raw = sessionStorage.getItem('prefill_booking');
-                                    if (raw) prefill = JSON.parse(raw);
-                                } catch {}
-                                navigate('/select-payment', { state: { selectedSevaId: seva._id, prefill } });
+                                navigate('/contact-trust');
                             } else {
                                 navigate(`/sevas/${seva._id}`, { state: { selectedSevaId: seva._id } });
                             }

@@ -14,9 +14,10 @@ const HomeSearchSection = () => {
     const [foundBookings, setFoundBookings] = useState([]);
     const navigate = useNavigate();
     const { t } = useTranslation();
-    // Removed isAuthenticated restriction for mobile search
+    const { isAuthenticated } = useSelector((state) => state.auth);
 
     const handleTrackBooking = async () => {
+        if (!isAuthenticated) return;
         // Only allow 10 digit mobile numbers
         const phone = (trackPhone || '').replace(/\D/g, '');
         if (!phone || phone.length !== 10) {
@@ -51,11 +52,8 @@ const HomeSearchSection = () => {
                     const { data: sevasList } = await api.get('/sevas');
                     if (sevasList && sevasList.length > 0) {
                         const firstId = sevasList[0]._id;
-                        const isAuthenticated = !!localStorage.getItem('token');
                         if (isAuthenticated) {
                             navigate(`/sevas/${firstId}`, { state: { selectedSevaId: firstId, paymentType: 'upi' } });
-                        } else {
-                            navigate('/select-payment', { state: { selectedSevaId: firstId, prefill } });
                         }
                     } else {
                         navigate('/sevas');
@@ -93,10 +91,10 @@ const HomeSearchSection = () => {
 
     // Auto-trigger search on 10 digits
     useEffect(() => {
-        if (trackPhone.length === 10) {
+        if (isAuthenticated && trackPhone.length === 10) {
             handleTrackBooking();
         }
-    }, [trackPhone]);
+    }, [trackPhone, isAuthenticated]);
 
     return (
         <div className="w-full px-4">
@@ -106,6 +104,7 @@ const HomeSearchSection = () => {
                     onChange={setTrackPhone}
                     onSearch={handleTrackBooking}
                     isTracking={isTracking}
+                    disabled={!isAuthenticated}
                     placeholder="Search with Mobile number"
                 />
             </div>

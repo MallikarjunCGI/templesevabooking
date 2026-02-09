@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const SearchBar = ({
     value,
     onChange,
     onSearch,
-    isTracking
+    isTracking,
+    disabled = false
 }) => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (disabled) return;
         onSearch(value);
     };
 
@@ -25,15 +24,17 @@ const SearchBar = ({
                     <input
                         type="text"
                         placeholder={t('home.search_placeholder') || "Search with Mobile Number"}
-                        className="w-full py-2.5 sm:py-3 outline-none text-gray-700 text-sm sm:text-base font-bold placeholder:text-gray-400 bg-transparent"
+                        className={`w-full py-2.5 sm:py-3 outline-none text-gray-700 text-sm sm:text-base font-bold placeholder:text-gray-400 bg-transparent ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
+                        disabled={disabled}
                     />
                     {isTracking && <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-orange-600 ml-2" />}
                 </div>
                 <button
                     type="submit"
-                    className="flex items-center justify-center bg-orange-600 text-white font-black rounded-xl sm:rounded-2xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-100 active:scale-95 shrink-0 h-11 w-11 sm:h-auto sm:w-auto sm:px-10 sm:py-4"
+                    className={`flex items-center justify-center font-black rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-orange-100 active:scale-95 shrink-0 h-11 w-11 sm:h-auto sm:w-auto sm:px-10 sm:py-4 ${disabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
+                    disabled={disabled}
                 >
                     <Search className="w-5 h-5 sm:hidden" />
                     <span className="hidden sm:block">
