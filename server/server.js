@@ -10,6 +10,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const heroRoutes = require('./routes/heroRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const devoteeRoutes = require('./routes/devoteeRoutes');
 
 // Load env vars
 dotenv.config();
@@ -61,7 +62,7 @@ app.get('/api/translate', async (req, res) => {
 });
 
 // Routes
-const devoteeRoutes = require('./routes/devoteeRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/sevas', sevasRoutes);
 app.use('/api/bookings', bookingRoutes);
