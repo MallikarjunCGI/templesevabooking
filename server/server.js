@@ -84,6 +84,32 @@ app.get('/api/version', (req, res) => {
     });
 });
 
+const logRoutes = () => {
+    const routes = [];
+    app._router.stack.forEach((layer) => {
+        if (layer.route && layer.route.path) {
+            const methods = Object.keys(layer.route.methods)
+                .map((m) => m.toUpperCase())
+                .join(',');
+            routes.push(`${methods} ${layer.route.path}`);
+        } else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
+            layer.handle.stack.forEach((r) => {
+                if (r.route && r.route.path) {
+                    const methods = Object.keys(r.route.methods)
+                        .map((m) => m.toUpperCase())
+                        .join(',');
+                    routes.push(`${methods} ${layer.regexp} ${r.route.path}`);
+                }
+            });
+        }
+    });
+    console.log('--- Registered Routes ---');
+    routes.forEach((r) => console.log(r));
+    console.log('-------------------------');
+};
+
+logRoutes();
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
