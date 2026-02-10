@@ -14,6 +14,7 @@ const DevoteesList = () => {
 
     const fetchDevotees = async () => {
         try {
+              console.log('Fetched devotees start:');
             const { data } = await api.get('/devotees');
             console.log('Fetched devotees:', data);
             setDevotees(Array.isArray(data) ? data : []);
