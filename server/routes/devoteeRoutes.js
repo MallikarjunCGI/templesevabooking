@@ -16,7 +16,7 @@ router.get('/', protect, admin, asyncHandler(async (req, res) => {
 // @desc    Get devotee by mobile number
 // @route   GET /api/devotees/:mobile
 // @access  Public
-router.get('/:mobile', asyncHandler(async (req, res) => {
+router.get('/mobile/:mobile', asyncHandler(async (req, res) => {
     const devotee = await Devotee.findOne({ mobile: req.params.mobile });
     if (devotee) {
         res.json(devotee);
