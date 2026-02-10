@@ -6,7 +6,9 @@ const Booking = require('../models/Booking');
 // @route   GET /api/devotees
 // @access  Private/Admin
 const getDevotees = asyncHandler(async (req, res) => {
+    console.log('Fetching devotees for admin in server block');
     const devotees = await Devotee.find({}).sort('-totalAmountSpent');
+    console.log('Fetched devotees server block:', devotees);
     res.json(devotees);
 });
 
