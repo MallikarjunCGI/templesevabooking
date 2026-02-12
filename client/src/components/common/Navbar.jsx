@@ -199,23 +199,35 @@ const Navbar = () => {
                                 {t('nav.book_seva')}
                             </Link>
 
-                                {!isAuthenticated && (
-                                    <Link
-                                        to="/login"
-                                        onClick={() => setIsOpen(false)}
-                                        className={`block px-3 py-2 rounded-md text-base font-bold ${location.pathname === '/login' ? 'text-orange-600 bg-orange-50' : 'text-gray-700'}`}
-                                    >
-                                        Login
-                                    </Link>
-                                )}
+                            {isAuthenticated && (user?.role === 'admin' || user?.role === 'counter') && (
+                                <Link
+                                    to={user?.role === 'counter' ? '/admin/counter-bookings' : '/admin'}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`block px-3 py-2 rounded-md text-base font-bold ${location.pathname.startsWith('/admin') ? 'text-orange-600 bg-orange-50' : 'text-gray-700'}`}
+                                >
+                                    {user?.role === 'counter' ? 'Counter' : 'Dashboard'}
+                                </Link>
+                            )}
 
-                            <button
-                                onClick={handleLogout}
-                                className="w-full text-left px-3 py-2 text-red-600 font-bold flex items-center"
-                            >
-                                <LogOut className="w-4 h-4 mr-2" />
-                                {t('nav.logout')}
-                            </button>
+                            {!isAuthenticated && (
+                                <Link
+                                    to="/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className={`block px-3 py-2 rounded-md text-base font-bold ${location.pathname === '/login' ? 'text-orange-600 bg-orange-50' : 'text-gray-700'}`}
+                                >
+                                    Login
+                                </Link>
+                            )}
+
+                            {isAuthenticated && (
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-3 py-2 text-red-600 font-bold flex items-center"
+                                >
+                                    <LogOut className="w-4 h-4 mr-2" />
+                                    {t('nav.logout')}
+                                </button>
+                            )}
                         </div>
                     </div>
                 )

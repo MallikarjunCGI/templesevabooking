@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import api from '../utils/api';
-import { LayoutDashboard, Users, FileText, Settings, Bell, LogOut, Home, BookOpen, Image } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, Bell, LogOut, Home, BookOpen, Image, Menu, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -17,6 +17,7 @@ const AdminLayout = () => {
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const fetchNotifications = async () => {
         try {
@@ -69,7 +70,7 @@ const AdminLayout = () => {
     return (
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
-            <aside className="w-64 bg-slate-900 text-white shadow-xl flex flex-col">
+            <aside className={`bg-slate-900 text-white shadow-xl flex flex-col w-64 fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-slate-800">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-amber-200 bg-clip-text text-transparent">
                         {t('admin.layout.title')}
@@ -89,6 +90,7 @@ const AdminLayout = () => {
                                     ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20'
                                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                     }`}
+                                onClick={() => setIsSidebarOpen(false)}
                             >
                                 <Icon className="w-5 h-5 mr-3" />
                                 <span className="font-medium">{item.name}</span>
@@ -97,14 +99,29 @@ const AdminLayout = () => {
                     })}
                 </nav>
             </aside>
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/40 z-40 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
                 {/* Topbar */}
                 <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-8">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        {navItems.find(i => i.path === location.pathname)?.name || t('admin.layout.dashboard')}
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="md:hidden p-2 rounded-lg text-gray-500 hover:text-orange-600 hover:bg-gray-100"
+                            onClick={() => setIsSidebarOpen(true)}
+                            aria-label="Open menu"
+                        >
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <h2 className="text-xl font-semibold text-gray-800">
+                            {navItems.find(i => i.path === location.pathname)?.name || t('admin.layout.dashboard')}
+                        </h2>
+                    </div>
                     <div className="flex items-center space-x-3">
                         <Link
                             to="/"
