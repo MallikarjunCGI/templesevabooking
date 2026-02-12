@@ -211,6 +211,7 @@ const SankalpaList = () => {
             if (key === 'devotee') return (it.devoteeName || '').toString();
             if (key === 'seva') return (it.sevaName || it.seva?.title || '').toString();
             if (key === 'amount') return Number(it.totalAmount || 0);
+            if (key === 'receipt') return it.receiptNo != null ? Number(it.receiptNo) : 0;
             if (key === 'bookingDate') return it.bookingDate ? new Date(it.bookingDate) : new Date(0);
             if (key === 'place') return (it.place || '').toString();
             if (key === 'pincode') return (it.pincode || '').toString();
@@ -337,6 +338,7 @@ const SankalpaList = () => {
                     <table className="w-full text-left text-sm text-gray-600">
                         <thead className="bg-gray-50 text-gray-400 uppercase font-bold text-[10px] tracking-widest">
                             <tr>
+                                <th onClick={() => { setSortBy('receipt'); setSortDir(sortBy === 'receipt' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Receipt No</th>
                                 <th onClick={() => { setSortBy('phone'); setSortDir(sortBy === 'phone' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Phone Number</th>
                                 <th onClick={() => { setSortBy('devotee'); setSortDir(sortBy === 'devotee' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Devotee Name</th>
                                 <th onClick={() => { setSortBy('seva'); setSortDir(sortBy === 'seva' && sortDir === 'asc' ? 'desc' : 'asc'); }} className="px-6 py-5 cursor-pointer">Seva Name</th>
@@ -351,6 +353,7 @@ const SankalpaList = () => {
                         <tbody className="divide-y divide-gray-100">
                             {filteredBookings.map((item) => (
                                 <tr key={item._id} className="hover:bg-orange-50/30 transition-colors">
+                                    <td className="px-6 py-5 font-mono text-gray-600">{item.receiptNo != null ? item.receiptNo : (item._id ? item._id.slice(-6).toUpperCase() : '')}</td>
                                     <td className="px-6 py-5 font-mono text-gray-600">{item.guestPhone || item.user?.phone || ''}</td>
                                     <td className="px-6 py-5 font-bold text-gray-900">{item.devoteeName}</td>
                                     <td className="px-6 py-5 font-medium text-gray-700">{item.sevaName || item.seva?.titleEn || item.seva?.title}</td>

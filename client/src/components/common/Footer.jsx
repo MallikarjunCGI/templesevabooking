@@ -147,7 +147,7 @@ const Footer = () => {
                                 <div className="space-y-1">
                                     <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Website</p>
                                     <p className="text-sm text-gray-300">
-                                        {settings?.website || "www.temple.com"}
+                                        {settings?.website || "www.shreekshetraramathirth.in"}
                                     </p>
                                 </div>
                             </div>

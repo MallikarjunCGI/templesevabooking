@@ -85,6 +85,12 @@ app.get('/api/version', (req, res) => {
 });
 
 const logRoutes = () => {
+    if (!app._router || !app._router.stack) {
+        console.log('--- Registered Routes ---');
+        console.log('No routes found (app._router not initialized yet).');
+        console.log('-------------------------');
+        return;
+    }
     const routes = [];
     app._router.stack.forEach((layer) => {
         if (layer.route && layer.route.path) {

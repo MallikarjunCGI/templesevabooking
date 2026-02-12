@@ -123,6 +123,7 @@ const Bookings = () => {
                     <table className="min-w-full">
                         <thead className="bg-gray-50">
                             <tr>
+                                <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Receipt No</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Mobile Number</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Full Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Seva Name</th>
@@ -133,6 +134,9 @@ const Bookings = () => {
                         <tbody className="divide-y divide-gray-100">
                             {filteredBookings.map((booking) => (
                                 <tr key={booking._id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 text-sm font-mono text-gray-600">
+                                        {booking.receiptNo != null ? booking.receiptNo : (booking._id ? booking._id.slice(-6).toUpperCase() : '')}
+                                    </td>
                                     <td className="px-6 py-4 text-sm font-mono text-gray-600">
                                         {booking.guestPhone || booking.user?.phone || ''}
                                     </td>
@@ -156,7 +160,7 @@ const Bookings = () => {
                             ))}
                             {filteredBookings.length === 0 && !loading && (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-10 text-center text-gray-400 font-medium">
+                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-400 font-medium">
                                         {t('bookings.no_bookings')}
                                     </td>
                                 </tr>

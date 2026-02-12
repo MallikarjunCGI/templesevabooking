@@ -103,8 +103,7 @@ const printReceipt = () => {
                 color: #000;
             }
             body {
-                background: url('/images/Temple_Reciept.jpg') no-repeat center center;
-                background-size: cover;
+                background: #ffffff;
             }
             .content {
                 box-sizing: border-box;
